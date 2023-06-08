@@ -18,3 +18,6 @@ selection bias. In this first version, we proposed to estimate parameters of the
 the IPW, g-computation and pooled LTMLE. We proposed an extension of the LCGA-MSM to a time-dependent outcome.
 We called this approach LCGA-HRMSM for LCGA and history-rectricted HRMSM. The same three estimators: IPW, g-computation
 and pooled LTMLE are proposed to estimate parameters of LCGA-HRMSMs. 
+
+To access the R codes: https://github.com/awamaeva/R-package-trajMSM.
+
