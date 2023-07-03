@@ -3,7 +3,7 @@ The package trajMSM is based on the paper Marginal Structural Models with Latent
 Analysis of Treatment Trajectories: https://doi.org/10.48550/arXiv.2105.12720. Latent class growth
 analysis (LCGA) are increasingly proposed as a solution to summarize the observed longitudinal
 treatment in a few distinct groups. When combined with standard approaches like Cox proportional
-hazards models, LCGM can fail to control time-dependent confounding bias because of timevarying
+hazards models, LCGA can fail to control time-dependent confounding bias because of timevarying
 covariates that have a double role of confounders and mediators. We propose to use LCGA
 to classify individuals into a few latent classes based on their medication adherence pattern, then
 choose a working marginal structural model (MSM) that relates the outcome to these groups. The
