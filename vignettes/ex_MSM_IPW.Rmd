@@ -1,0 +1,291 @@
+---
+title: "Ex_MSM_IPW"
+author: "Awa Diop"
+date: "2022-10-24"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(dagitty)
+library(ggraph)
+library(ggdag)
+library(cobalt)
+g1 <- dagitty("dag{
+                  V -> L1
+                  V -> A1
+                  V -> Y
+                  L1 -> A1
+                  L1 -> L2
+                  L1 -> A2
+                  L1 -> L3
+                  L1 -> A3
+                  L1 -> Y
+                  L2 -> A2
+                  L2 -> L3
+                  L2 -> Y
+                  L3 -> A3
+                  L3 -> Y
+                  A1 -> L2
+                  A1 -> L3
+                  A1 -> A2
+                  A1 -> A3
+                  A1 -> Y
+                  A2 -> L3
+                  A2 -> A3
+                  A2 -> Y
+                  A3 -> Y
+  }")
+
+ggdag(g1, node=TRUE,node_size = 16, 
+      text_col = "white", edge_type = "link",
+      stylized = TRUE)+theme_dag_blank()+
+  scale_adjusted()+geom_dag_edges_fan() 
+
+# Data generation
+N = 50000 ; 
+# baseline
+V <- rnorm(N,0,1)
+
+# Time 1
+L1 <- rbinom(N, 1, plogis(0.5*V))
+A1 <- rbinom(N,1, plogis(-.5*V - 0.75*L1))
+
+# Time 2
+L2 <- rbinom(N,1, plogis(0.25*V + 0.5*L1 - 0.2*A1))
+A2 <- rbinom(N,1, plogis(-.5*V - 0.85*L1 - 0.75*L2 + 0.75*A1))
+
+# Time 3
+L3 <- rbinom(N,1,plogis(0.25*V + 0.5*L1 + 0.75*L2 - 0.2*A1 - 0.25*A2 ))
+A3 <- rbinom(N,1, plogis(-.5*V - 0.45*L1 - 0.5*L2 - 0.75*L3 + 0.5*A1 + 0.75*A2))
+
+# End of follow-up
+
+Y <- -0.5*(A1+A2+A3) +0.25*L1 + 0.25*L2 + 0.1*L3 +0.25*V + rnorm(N,0,1)
+
+dat_ex <- data.frame(id = 1:N,A1 = A1, A2 = A2, A3 = A3, V = V,L1 = L1, L2 = L2, L3 = L3, Y = Y)
+
+
+# unstabilized IPW - stratified 
+
+
+# time 1
+
+mod_ps_den1 <- glm(A1 ~ L1 + V, family = binomial, data = dat_ex)
+ps_den1 <- predict(mod_ps_den1, type = "response")
+  
+# time 2
+
+mod_ps_den2 <- glm(A2 ~ L1 + L2 + A1 + V, family = binomial, data = dat_ex)
+ps_den2 <- predict(mod_ps_den2, type = "response")
+
+# time 3
+
+mod_ps_den3 <- glm(A3 ~ L3 + L2 + L1 + A1 + A2 + V, family = binomial, data = dat_ex)
+ps_den3 <- predict(mod_ps_den3, type = "response")
+
+
+
+# weights 
+
+
+# time 1
+
+w1 <- with(dat_ex, A1/ps_den1 + (1-A1)/(1-ps_den1))
+
+
+# time 2
+
+w2 <- with(dat_ex, A2/ps_den2 + (1-A2)/(1-ps_den2))
+
+
+# time 3
+
+w3 <- with(dat_ex, A3/ps_den3 + (1-A3)/(1-ps_den3))
+
+summary(cbind(w1,w2,w3))
+summary(cbind(w1,w1*w2,w1*w2*w3))
+
+#Covariates balance 
+
+# time 1
+base_bal <- data.frame(A1=A1, L1 = L1, V = V, wt1 = w1)
+vars <- c("V", "L1")
+
+b_vars <- dat_ex[,vars]
+bal_out <- bal.tab(A1 ~ b_vars,weights = "wt1",estimand = "ATE",un = TRUE,data = base_bal)
+bal_out
+love.plot(bal_out)
+
+
+# time 2
+base_bal <- data.frame(A1=A1, A2 = A2, L1 = L1, L2 = L2, V = V, wt2 = w1*w2)
+vars <- c("V", "L1", "L2")
+
+b_vars <- dat_ex[,vars]
+bal_out <- bal.tab(A2 ~ b_vars,weights = "wt2",estimand = "ATE",un = TRUE,data = base_bal)
+bal_out
+love.plot(bal_out)
+
+# time 3
+base_bal <- data.frame(A1=A1, A2 = A2, A3 = A3, L1 = L1, L2 = L2, L3 = L3, V = V, wt3 = w1*w2*w3)
+vars <- c("V", "L1", "L2","L3")
+
+b_vars <- dat_ex[,vars]
+bal_out <- bal.tab(A2 ~ b_vars,weights = "wt3",estimand = "ATE",un = TRUE,data = base_bal)
+bal_out
+love.plot(bal_out)
+
+# Estimation ATE effect
+
+dat_ex$Acum <- with(dat_ex, A1+A2+A3)
+lm(Y ~ Acum, weights = w1*w2*w3, data = dat_ex)
+
+# unstabilized IPW - pooled
+
+dat_ex_long <- reshape(dat_ex, varying = list(2:4,6:8), direction = "long", idvar =  "id", v.names = c("A","L"))
+
+
+mod_ps_den <- glm(A ~ L + V + factor(time), family = binomial, data = dat_ex_long)
+dat_ex_long$ps_den <- predict(mod_ps_den, type = "response")
+
+dat_ex_wide <- reshape(dat_ex_long, timevar = "time", direction = "wide", idvar =  "id", v.names = c("A","L","ps_den"))
+
+# weights 
+
+
+# time 1
+
+w.1 <- with(dat_ex_wide, A.1/ps_den.1 + (1-A.1)/(1-ps_den.1))
+
+
+# time 2
+
+w.2 <- with(dat_ex_wide, A.2/ps_den.2 + (1-A.2)/(1-ps_den.2))
+
+
+# time 3
+
+w.3 <- with(dat_ex_wide, A.3/ps_den.3 + (1-A.3)/(1-ps_den.3))
+
+summary(cbind(w.1,w.2,w.3))
+summary(cbind(w.1,w.1*w.2,w.1*w.2*w.3))
+
+
+
+#Covariates balance 
+
+# time 1
+base_bal <- with(dat_ex_wide,data.frame(A.1=A.1, L.1 = L.1, V = V, wt1 = w.1))
+vars <- c("V", "L.1")
+
+b_vars <- dat_ex_wide[,vars]
+bal_out <- bal.tab(A1 ~ b_vars,weights = "wt1",estimand = "ATE",un = TRUE,data = base_bal)
+bal_out
+love.plot(bal_out)
+
+
+# time 2
+base_bal <- with(dat_ex_wide,data.frame(A.1=A.1, A.2 = A.2, L.1 = L.1, L.2 = L.2, V = V, wt2 = w.1*w.2))
+vars <- c("V", "L.1", "L.2")
+
+b_vars <- dat_ex_wide[,vars]
+bal_out <- bal.tab(A.2 ~ b_vars,weights = "wt2",estimand = "ATE",un = TRUE,data = base_bal)
+bal_out
+love.plot(bal_out)
+
+# time 3
+base_bal <- with(dat_ex_wide,data.frame(A.1=A.1, A.2 = A.2, A.3 = A.3, L.1 = L.1, L.2 = L.2, L.3 = L.3, V = V, wt3 = w.1*w.2*w.3))
+vars <- c("V", "L.1", "L.2","L.3")
+
+b_vars <- dat_ex_wide[,vars]
+bal_out <- bal.tab(A2 ~ b_vars,weights = "wt3",estimand = "ATE",un = TRUE,data = base_bal)
+bal_out
+love.plot(bal_out)
+
+# Estimation ATE effect
+
+dat_ex_wide$Acum <- with(dat_ex_wide, A.1+A.2+A.3)
+lm(Y ~ Acum, weights = w1*w2*w3, data = dat_ex_wide)
+
+# stabilized IPW without baseline variables - stratified 
+
+
+# time 1
+mod_ps_num1 <- glm(A1 ~ 1, family = binomial, data = dat_ex)
+ps_num1 <- predict(mod_ps_num1, type = "response")
+
+mod_ps_den1 <- glm(A1 ~ L1 + V, family = binomial, data = dat_ex)
+ps_den1 <- predict(mod_ps_den1, type = "response")
+
+# time 2
+mod_ps_num2 <- glm(A2 ~ A1, family = binomial, data = dat_ex)
+ps_num2 <- predict(mod_ps_num2, type = "response")
+
+mod_ps_den2 <- glm(A2 ~ L1 + L2 + A1 + V, family = binomial, data = dat_ex)
+ps_den2 <- predict(mod_ps_den2, type = "response")
+
+# time 3
+mod_ps_num3 <- glm(A3 ~ A2 +A1, family = binomial, data = dat_ex)
+ps_num3 <- predict(mod_ps_num3, type = "response")
+
+mod_ps_den3 <- glm(A3 ~ L3 + L2 + L1 + A1 + A2 + V, family = binomial, data = dat_ex)
+ps_den3 <- predict(mod_ps_den3, type = "response")
+
+
+# weights 
+
+
+# time 1
+
+sw1 <- with(dat_ex, A1*ps_num1/ps_den1 + ((1-A1)*(1-ps_num1))/(1-ps_den1))
+
+
+# time 2
+
+sw2 <- with(dat_ex, A2*ps_num2/ps_den2 + ((1-A2)*(1-ps_num2))/(1-ps_den2))
+
+
+# time 3
+
+sw3 <- with(dat_ex, A3*ps_num3/ps_den3 + ((1-A3)*(1-ps_num3))/(1-ps_den3))
+
+summary(cbind(sw1,sw2,sw3))
+summary(cbind(sw1,sw1*sw2,sw1*sw2*sw3))
+
+#Covariates balance 
+
+# time 1
+base_bal <- data.frame(A1=A1, L1 = L1, V = V, swt1 = sw1)
+vars <- c("V", "L1")
+
+b_vars <- dat_ex[,vars]
+bal_out <- bal.tab(A1 ~ b_vars,weights = "swt1",estimand = "ATE",un = TRUE,data = base_bal)
+bal_out
+love.plot(bal_out)
+
+
+# time 2
+base_bal <- data.frame(A1=A1, A2 = A2, L1 = L1, L2 = L2, V = V, swt2 = sw1*sw2)
+vars <- c("V", "L1", "L2")
+
+b_vars <- dat_ex[,vars]
+bal_out <- bal.tab(A2 ~ b_vars,weights = "swt2",estimand = "ATE",un = TRUE,data = base_bal)
+bal_out
+love.plot(bal_out)
+
+# time 3
+base_bal <- data.frame(A1=A1, A2 = A2, A3 = A3, L1 = L1, L2 = L2, L3 = L3, V = V, swt3 = sw1*sw2*sw3)
+vars <- c("V", "L1", "L2","L3")
+
+b_vars <- dat_ex[,vars]
+bal_out <- bal.tab(A2 ~ b_vars,weights = "swt3",estimand = "ATE",un = TRUE,data = base_bal)
+bal_out
+love.plot(bal_out)
+
+# Estimation ATE effect
+
+dat_ex$Acum <- with(dat_ex, A1+A2+A3)
+lm(Y ~ Acum, weights = sw1*sw2*sw3, data = dat_ex)
+
+
+```

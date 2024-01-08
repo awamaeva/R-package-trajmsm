@@ -1,0 +1,46 @@
+---
+title: "trajMSM"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{trajMSM}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(trajMSM)
+```
+
+# Introduction 
+
+
+# Latent Class Growth Analysis (LCGA)
+
+# Marginal Structural Model and LCGA (LCGA-MSM)
+
+
+## LCGA-MSM and IPW
+
+## LCGA-MSM and g-formula
+
+## LCGA-MSM and pooled-LTMLE
+
+
+# History restricted MSM and LCGA (LCGA-HRMSM)
+
+
+## LCGA-HRMSM and IPW
+
+## LCGA-HRMSM and g-formula
+
+## LCGA-HRMSM and pooled-LTMLE
+
+
+
