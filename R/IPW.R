@@ -1,49 +1,48 @@
 #' @title Inverse Probability Weighting
 #' @description Compute stabilized and unstabilized with and without censor weights.
-#' @name InverseProbabilityWeighting
-#' @param Identifier Name of the column for unique identifier.
-#' @param Baseline Baseline covariates.
-#' @param Covariates Time-varying covariates.
-#' @param Treatment Time-varying treatment.
-#' @param IncludeCensor Logical value TRUE/FALSE to include or not a censoring variable.
-#' @param TotalFollowUp Total length of follow-up.
-#' @param CensorVariable Name of the censoring variable.
-#' @param ObservedData Observed data in wide format.
-#' @return Inverse Probability Weights (Stabilized and Unstabilized) with and without censoring
+#' @name inverse_probability_weighting
+#' @param numerator To choose between stabilized and unstabilized weights.
+#' @param identifier Name of the column for unique identifier.
+#' @param baseline Name of the baseline covariates.
+#' @param covariates Name of the time-varying covariates.
+#' @param treatment Name of the time-varying treatment.
+#' @param total_follow_up Total length of follow-up.
+#' @param include_censor Logical value TRUE/FALSE to include or not a censoring variable.
+#' @param censor Name of the censoring variable.
+#' @param obsdata Observed data in wide format.
+#' @return Inverse Probability Weights (Stabilized and Unstabilized) with and without censoring.
+#' @export
 #' @author Awa Diop, Denis Talbot
-#' @export InverseProbabilityWeighting
 #' @examples
-#' dat = gendatTrajMSM(n = 500, Censor = FALSE)
-#' Baseline <- c("Age", "Sex")
-#' Covariates <- c("Hyper", "BMI")
-#' Treatment <- "Statins"
-#' CensorVariable <- "C"
-#' sw = IPW(numerator = "stabilized", Identifier = "ID", Baseline = c("Age", "Sex"),
-#'         Covariates = c("Hyper", "BMI"), Time = "Time",
-#'         Treatment = "Statins", ObservedData = dat)
+#' Obsdata = gendata_trajmsm(n = 1000, include_censor = TRUE, format = "wide", seed = 745)
+#' baseline_var <- c("age","sex")
+#'covariates <- list(c("hyper2011", "bmi2011"),c("hyper2012", "bmi2012"),c("hyper2013", "bmi2013"))
+#' treatment_var <- c("statins2011","statins2012","statins2013")
+#' censor_var = c("censor2011","censor2012","censor2013")
+#' stabilized_weights = inverse_probability_weighting(numerator = "stabilized", identifier = "id",
+#'         covariates = covar, treatment = treatment_var, baseline = baseline_var,
+#'           total_follow_up = 3,include_censor = TRUE,censor = censor_var, obsdata = Obsdata)
 
-InverseProbabilityWeighting <- function(numerator = c("stabilized", "unstabilized"), Identifier = id,
-                Baseline = V, Covariates = L, Treatment = A, IncludeCensor = FALSE,
-                TotalFollowUp = K, CensorVariable = censor, 
-                ObservedData = obsdata) {
-  
-  # Adjust function calls based on the 'numerator' and 'IncludeCensor' parameters
-  if (numerator == "unstabilized" && !IncludeCensor) {
-    IPWResult = UnstabilizedIPTW(Identifier, Baseline, Covariates, Treatment, TotalFollowUp, ObservedData)
+inverse_probability_weighting <- function(numerator = c("stabilized", "unstabilized"), identifier,
+                                          baseline, covariates, treatment,
+                                          total_follow_up, include_censor = FALSE, censor,
+                                          obsdata){
+  if (!is.data.frame(obsdata)) {
+    stop("obsdata must be a data frame in wide format")
   }
-  
-  if (numerator == "stabilized" && !IncludeCensor) {
-    IPWResult = StabilizedIPTW(Identifier, Baseline, Covariates, Treatment, TotalFollowUp, ObservedData)
-  }
-  
-  if (numerator == "unstabilized" && IncludeCensor) {
-    IPWResult = UnstabilizedIPCW(Identifier, Baseline, Covariates, Treatment, TotalFollowUp, CensorVariable, ObservedData)
-  }
-  
-  if (numerator == "stabilized" && IncludeCensor) {
-    IPWResult = StabilizedIPCW(Identifier, Baseline, Covariates, Treatment, TotalFollowUp, CensorVariable, ObservedData)
-  }
-  
-  class(IPWResult) <- "InverseProbabilityWeighting"
-  return(IPWResult)
+
+  # Validate numerator
+  numerator <- match.arg(numerator)
+
+  ipw_result <- switch(numerator,
+                       "unstabilized" = ifelse(include_censor,
+                                               unstabilized_ipcw(identifier, treatment, covariates, baseline, censor, total_follow_up, obsdata),
+                                               unstabilized_iptw(identifier, treatment, covariates, baseline, total_follow_up, obsdata)),
+                       "stabilized" = ifelse(include_censor,
+                                             stabilized_ipcw(identifier, treatment, covariates, baseline, censor, total_follow_up, obsdata),
+                                             stabilized_iptw(identifier, treatment, covariates, baseline, total_follow_up, obsdata))
+  )
+
+  class(ipw_result) <- "IPW"
+  return(ipw_result)
 }
