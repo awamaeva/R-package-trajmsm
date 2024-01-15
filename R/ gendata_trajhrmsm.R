@@ -1,5 +1,5 @@
 
- gen_data_hrmsm<-function(n,seed = 945){
+ gendata_trajhrmsm<-function(n,seed = 945){
  set.seed = seed;
  expit = plogis;
   #Window 1

@@ -69,4 +69,4 @@ gendata_trajmsm <- function(n, include_censor = FALSE, format = c("long", "wide"
   return(observed_data)
 }
 
-obsdata <- gendata_trajmsm(n = 100, include_censor = TRUE, format = "long", seed = 345)
+obsdata <- gendata_trajmsm(n = 100, include_censor = TRUE, format = "wide", seed = 345)
