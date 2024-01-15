@@ -16,7 +16,7 @@
 #' @param weights A vector of estimated weights. If NULL, the weights are computed by the function \code{IPW}.
 #' @param treshold For weight truncation.
 #' @return Stabilized and unstabilized inverse of probabilities
-#' @export
+#' @export trajmsm_ipw
 #' @importFrom sandwich
 #' @importFrom survival coxph
 #' @import flexmix
@@ -24,7 +24,7 @@
 # Example usage of the function
 #' Obsdata_long = gendata_trajmsm(n = 1000, include_censor = TRUE, format = "long", seed = 945)
 #' baseline_var <- c("age","sex")
-#'covariates <- list(c("hyper2011", "bmi2011"),c("hyper2012", "bmi2012"),c("hyper2013", "bmi2013"))
+#' covariates <- list(c("hyper2011", "bmi2011"),c("hyper2012", "bmi2012"),c("hyper2013", "bmi2013"))
 #' treatment_var <- c("statins2011","statins2012","statins2013")
 #' censor_var = c("censor2011","censor2012","censor2013")
 #' formula = as.formula(cbind(statins, 1 - statins) ~ time)
