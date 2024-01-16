@@ -18,11 +18,10 @@
 #' @return \item{results_msm_gform}{Estimates of a LCGA-MSM with g-formula.}
 #' @export trajmsm_gform
 #' @examples
-#' Obsdata_long = gendata_trajmsm(n = 1000, format = "long", seed = 945)
+#' Obsdata_long = gendata_trajmsm(n = 2000, format = "long", seed = 945)
 #' baseline_var <- c("age","sex")
 #' covariates <- list(c("hyper2011", "bmi2011"),c("hyper2012", "bmi2012"),c("hyper2013", "bmi2013"))
 #' treatment_var <- c("statins2011","statins2012","statins2013")
-#' time = "Time"
 #' time_values <- c(2011,2012,2013)
 #' formulaA = as.formula(cbind(statins, 1 - statins) ~ time)
 #' restraj = build_traj(obsdata = Obsdata_long, number_traj = 3, formula = formulaA, identifier = "id")
@@ -31,13 +30,12 @@
 #'     AggFormula <- as.formula(paste("statins", "~", "time", "+", "class"))
 #'     AggTrajData <- aggregate(AggFormula, data = trajmsm_long, FUN = mean)
 #'     AggTrajData
-#'trajmsm_long[ , "traj_group"] <- trajmsm_long[ , "class"]
 #' trajmsm_wide = reshape(trajmsm_long, direction = "wide", idvar = "id",
 #' v.names = c("statins","bmi","hyper"), timevar = "time", sep ="")
 #' formulaY =  as.formula(" y ~ statins2011 + statins2012 + statins2013 + hyper2011 + bmi2011 + hyper2012 + bmi2012 +
 #'                                     hyper2013 + bmi2013 + age + sex ")
 #'trajmsm_gform(formula = formulaY, identifier = "id", baseline = baseline, covariates = covariates,
-#'                                     treatment = treatment_var, outcome = "y", total_followup = 3,time = time,
+#'                                     treatment = treatment_var, outcome = "y", total_followup = 3,time = "time",
 #'                                     time_values = time_values, trajmodel = restraj$traj_model,
 #'                                     ref = "3", obsdata = trajmsm_wide)
 #' @author Awa Diop Denis Talbot

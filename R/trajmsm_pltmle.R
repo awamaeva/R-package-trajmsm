@@ -14,7 +14,7 @@
 #' @param ref the reference group.
 #' @export trajmsm_pltmle
 #' @examples
-#' Obsdata_long = gendata_trajmsm(n = 1000, format = "long", seed = 945)
+#' Obsdata_long = gendata_trajmsm(n = 2000, format = "long", seed = 945)
 #' baseline_var <- c("age","sex")
 #' covariates <- list(c("hyper2011", "bmi2011"),c("hyper2012", "bmi2012"),c("hyper2013", "bmi2013"))
 #' treatment_var <- c("statins2011","statins2012","statins2013")
@@ -34,13 +34,13 @@
 #'trajmsm_pltmle(formula = formulaY, identifier = identifier, baseline = baseline,
 #'               covariates = covariates, treatment = treatment, outcome = "y",
 #'              time = "time", time_values = time_values, number_traj = 3, total_followup = 3,
-#'              trajmodel = restraj$traj_model, ref = "3", obsdata = trajmsm_wide)
+#'              trajmodel = restraj$traj_model, ref = "3", obsdata = trajmsm_wide, treshold = 0.99)
 #' @return \item{results_msm_pooledltmle}{Estimates of a LCGA-MSM with pooled LTMLE.}
 #' @author Awa Diop, Denis Talbot
 
 
 trajmsm_pltmle <- function(formula = formula,identifier,baseline,covariates,treatment,outcome,
-                                 number_traj,total_followup, time,time_values,trajmodel,ref,obsdata){
+                                 number_traj,total_followup, time,time_values,trajmodel,ref,obsdata,treshold){
 
  stopifnot(!is.null(identifier));
  stopifnot(!is.null(baseline));
@@ -52,7 +52,7 @@ trajmsm_pltmle <- function(formula = formula,identifier,baseline,covariates,trea
  stopifnot(!is.null(trajmodel));
  stopifnot(!is.null(time));
  stopifnot(!is.null(time_values));
-
+  stopifnot(!is.null(treshold));
      nregimes = 2^total_followup;  #number of treatment regimes
 
      treatment_names <- sub("\\d+", "", treatment)
@@ -64,11 +64,11 @@ trajmsm_pltmle <- function(formula = formula,identifier,baseline,covariates,trea
      traj_indic=t(sapply(1:nregimes,function(x)sapply(1:number_traj,function(i) ifelse(class[x]==i,1,0))))
      traj_indic[,1]=1 #Intercept
     #Create the obsdata under all the different regime of treatment
-    res = pltmle(formula = formula, outcome = outcome,treatment = treatment,
+     res_pltmle = pltmle(formula = formula, outcome = outcome,treatment = treatment,
                  covariates = covariates, baseline = baseline, ntimes_interval = total_followup, number_traj = number_traj,
-                 time =  time, time_values = time_values,identifier = identifier,obsdata = obsdata,traj=traj_indic);
+                 time =  time, time_values = time_values,identifier = identifier,obsdata = obsdata,traj=traj_indic, treshold = treshold);
 
-    obsdata_pool= data.frame(Y=res$counter.means);
+    obsdata_pool= data.frame(Y=res_pltmle$counter_means);
     D=res$D; #Influence functions
 
     # Estimation

@@ -14,11 +14,10 @@
 #' \item{D}{Influence functions}
 #' @import e1071
 #' @examples
-#' Obsdata_long = gendata_trajmsm(n = 1000, format = "long", seed = 945)
+#' Obsdata_long = gendata_trajmsm(n = 2000, format = "long", seed = 945)
 #' baseline_var <- c("age","sex")
 #' covariates <- list(c("hyper2011", "bmi2011"),c("hyper2012", "bmi2012"),c("hyper2013", "bmi2013"))
 #' treatment_var <- c("statins2011","statins2012","statins2013")
-#' time = "Time"
 #' time_values <- c(2011,2012,2013)
 #' formulaA = as.formula(cbind(statins, 1 - statins) ~ time)
 #' restraj = build_traj(obsdata = Obsdata_long, number_traj = 3, formula = formulaA, identifier = "id")
@@ -37,16 +36,18 @@
 #'         trajmodel = restraj$traj_model)$post_class);
 #' traj_indic=t(sapply(1:nregimes,function(x)sapply(1:number_traj,function(i) ifelse(class[x]==i,1,0))))
 #' traj_indic[,1]=1
-#' pltmle(formula = formulaY, outcome = outcome,treatment = treatment_var,
+#' res_pltmle = pltmle(formula = formulaY, outcome = outcome,treatment = treatment_var,
 #'                   covariates = covar, baseline = baseline_var, ntimes_interval = 3, number_traj = 3,
-#'                  time =  "Time",time_values = time_values,identifier = "id",obsdata = trajmsm_wide,traj=traj_indic)
+#'                  time =  "Time",time_values = time_values,identifier = "id",obsdata = trajmsm_wide,traj=traj_indic, treshold = 0.99)
+#' res_pltmle$counter_means
 #' @author Awa Diop, Denis Talbot
 
 
 pltmle <- function(formula, outcome, treatment, covariates, baseline, ntimes_interval, number_traj,
-                   time, time_values, identifier, obsdata, traj, total_followup) {
+                   time, time_values, identifier, obsdata, traj, total_followup, treshold = treshold) {
   # Initialize variables
-  D = NULL
+  D = NULL #Influence curve
+  D_list = list() #To store all influence curves
   obsdata0.all = list()
   obsdata.all = list()
   nregimes = 2^ntimes_interval  # Number of treatment regimes
@@ -84,27 +85,32 @@ pltmle <- function(formula, outcome, treatment, covariates, baseline, ntimes_int
                                           total_follow_up = total_followup, numerator = "unstabilized",
                                           include_censor = include_censor, censor = censor,obsdata = obsdata)[[1]];
 
+  weights_trunc <- sapply(1:ntimes_interval, function(x){
+  weights <- ifelse(quantile(Weights[, x], treshold, na.rm = TRUE)> Weights[, x], quantile(Weights[, x], treshold, na.rm = TRUE), Weights[, x])
+  return(weights)
+  })
   # Compute Hs for each regime
   Hs.all = lapply(1:nregimes, function(x) {
     regime = list.regimes[[x]]
-    Hs = as.matrix(rowSums(sapply(1:ntimes_interval, function(i) obsdata[, treatment[i]] == regime[i])) == ntimes_interval) * Weights[, ntimes_interval]
+    Hs = as.matrix(rowSums(sapply(1:ntimes_interval, function(i) obsdata[, treatment[i]] == regime[i])) == ntimes_interval) *  weights_trunc[, ntimes_interval]
     return(Hs %*% t(traj[x, 1:number_traj]))
   })
 
   Hs = do.call(rbind, Hs.all)
 
   # Update the risk for each regime of treatment
-  modEs = glm(unlist(Qstar) ~-1+offset(qlogis(unlist(Qs))) + Hs, family = binomial, data = obsdata.all2);
+  modEs = glm(as.formula(paste0(outcome, "~", "-1 + offset(qlogis(unlist(Qs))) + Hs")), family = binomial, data = obsdata.all2);;
 
   coef_Es = ifelse(is.na(coef(modEs)), 0, coef(modEs))
 
   Qstar = lapply(1:nregimes,function(x)plogis(qlogis(Qs[[x]]) +
                                                 as.numeric(t(t(as.matrix( coef_Es))%*%t(Hs.all[[x]])))));
 
-  # Influence curve for each regime of treatment
-  D = lapply(1:nregimes, function(x) {
-    sapply(1:number_traj, function(y) Hs.all[[x]][, y] * (obsdata[, outcome] - Qstar[[x]]))
-  })
+  # Influence curve for each treatment regime
+  Ds = lapply(1:nregimes,function(x)sapply(1:number_traj,function(y)
+    (Hs.all[[x]][,y]*(obsdata[,outcome] - Qstar[[x]]))))
+
+  D_list[ntimes_interval]<-list(Ds)
 
   # Loop to update the risk for each time interval
   for (i in (ntimes_interval - 1):1) {
@@ -123,7 +129,7 @@ pltmle <- function(formula, outcome, treatment, covariates, baseline, ntimes_int
     # Update Hs for each regime
     Hs.all = lapply(1:nregimes, function(x) {
       regime = list.regimes[[x]]
-      Hs = as.matrix(rowSums(sapply(1:i, function(i) obsdata[, treatment[i]] == regime[i])) == i) * Weights[, i]
+      Hs = as.matrix(rowSums(sapply(1:i, function(i) obsdata[, treatment[i]] == regime[i])) == i) * weights_trunc[, i]
       return(Hs %*% t(traj[x, 1:number_traj]))
     })
 
@@ -131,9 +137,14 @@ pltmle <- function(formula, outcome, treatment, covariates, baseline, ntimes_int
 
     modEs = glm(unlist(Qstar) ~ -1 + offset(qlogis(unlist(Qs))) + Hs, family = binomial(), data = obsdata.all2)
     coef_Es = ifelse(is.na(coef(modEs)), 0, coef(modEs))
-    Qstar = lapply(1:nregimes,function(x)plogis(qlogis(Qs[[x]]) +
+    Qstarm1 = lapply(1:nregimes,function(x)plogis(qlogis(Qs[[x]]) +
                                                   as.numeric(t(t(as.matrix( coef_Es))%*%t(Hs.all[[x]])))));
+    Ds = lapply(1:nregimes,function(x) sapply(1:number_traj,function(y)
+      as.matrix(Hs.all[[x]][,y]*(Qstar[[x]]-Qstarm1[[x]]))))
+    D_list[i]<-list(Ds)
   }
+
+
 
   # Aggregate the results
   Q0 = unlist(Qstar)
@@ -142,7 +153,12 @@ pltmle <- function(formula, outcome, treatment, covariates, baseline, ntimes_int
   obsdataT2 = aggregate(outcome ~ atraj, data = obsdata0.all2, FUN = mean)
   obsdataT2$outcome = as.numeric(as.character(obsdataT2$outcome))
 
-  list_pltmle_countermeans = list(counter.means = obsdataT2$outcome, D = D)
+  #Influence curves
+  D = lapply(1:nregimes,function(x) as.matrix(Reduce('+',lapply(1:number_traj, function(y){
+    comps = as.matrix(D_list[[y]][[x]] +  as.numeric(Qstar[[x]] - mean(Qstar[[x]])))
+    return(comps)
+  }))))
+  list_pltmle_countermeans = list(counter_means = obsdataT2$outcome, D = D)
   return(list_pltmle_countermeans)
 }
 
