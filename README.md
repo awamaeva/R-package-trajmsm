@@ -1,22 +1,13 @@
 # R-package-trajMSM
-The package trajMSM is based on the paper Marginal Structural Models with Latent Class Growth
-Analysis of Treatment Trajectories: https://doi.org/10.48550/arXiv.2105.12720. Latent class growth
-analysis (LCGA) are increasingly proposed as a solution to summarize the observed longitudinal
-treatment in a few distinct groups. When combined with standard approaches like Cox proportional
-hazards models, LCGA can fail to control time-dependent confounding bias because of timevarying
-covariates that have a double role of confounders and mediators. We propose to use LCGA
-to classify individuals into a few latent classes based on their medication adherence pattern, then
-choose a working marginal structural model (MSM) that relates the outcome to these groups. The
-parameter of interest is nonparametrically defined as the projection of the true MSM onto the chosen
-working model. The combination of LCGA with MSM (LCGA-MSM) is a convenient way
-to describe treatment adherence and can effectively control time-dependent confounding. Several
-approaches exist to estimate the parameters of a MSM and one of the most popular is the inverse
-probability weighting (IPW). The IPW mimics a random assignment of the treatment by creating
-a pseudo-population where the treated and the untreated groups are comparable. In longitudinal
-settings, IPW can appropriately adjust for time-varying covariates affected by prior exposure and
-selection bias. In this first version, we proposed to estimate parameters of the LCGA-MSM using
-the IPW, g-computation and pooled LTMLE. We proposed an extension of the LCGA-MSM to a time-dependent outcome.
-We called this approach LCGA-HRMSM for LCGA and history-rectricted HRMSM. The same three estimators: IPW, g-computation
-and pooled LTMLE are proposed to estimate parameters of LCGA-HRMSMs. 
 
-To access the R codes: https://github.com/awamaeva/R-package-trajMSM.
+The `trajMSM` package is inspired by the paper "Marginal Structural Models with Latent Class Growth Analysis of Treatment Trajectories," published in *Statistical Methods for Medical Research*. [Read the paper](https://journals.sagepub.com/doi/pdf/10.1177/09622802231202384). 
+
+Latent Class Growth Analysis (LCGA) is increasingly used to summarize longitudinal treatment data into distinct groups. However, combining LCGA with standard methods like Cox proportional hazards models often fails to control time-dependent confounding due to covariates acting as both confounders and mediators. Our solution employs LCGA to classify individuals into latent classes based on their medication adherence patterns. We then utilize a Marginal Structural Model (MSM) to relate outcomes to these groups. The key parameter is nonparametrically defined, projecting the true MSM onto the selected working model.
+
+Integrating LCGA with MSM (termed LCGA-MSM) offers an effective way to describe treatment adherence and control time-dependent confounding. Common methods to estimate MSM parameters include Inverse Probability Weighting (IPW), which creates a pseudo-population for balanced treatment groups. In longitudinal settings, IPW adjusts for time-varying covariates impacted by previous exposures and selection bias.
+
+In this initial version of `trajMSM`, we estimate LCGA-MSM parameters using IPW, g-computation, and pooled Longitudinal Targeted Maximum Likelihood Estimation (LTMLE). We also introduce an extension for time-dependent outcomes, termed LCGA-History-Restricted MSM (LCGA-HRMSM), with the same three estimators.
+
+For access to the R codes, visit our [GitHub repository](https://github.com/awamaeva/R-package-trajMSM).
+
+For additional insights on trajectory analysis, check out the [trajectory_analysis repository](https://github.com/awamaeva/trajectory_analysis).
