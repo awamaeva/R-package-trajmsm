@@ -48,6 +48,7 @@ nregimes <- 2^ntimes_interval  # Number of treatment regimes
     obsdata$Qs<- predict(mod_Qsp1, newdata = dat0, type = "response")
 
     for (i in (ntimes_interval - 1):1) {
+
       # Update formula
       current_treatments <- paste0(treatment[1:i], collapse = "+")
       current_covariates <- paste0(unlist(covariates[1:i]), collapse = "+")

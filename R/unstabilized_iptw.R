@@ -51,7 +51,7 @@ unstabilized_iptw <- function(identifier, treatment, covariates, baseline, total
 
   # Calculate weights for the first time point
   first_time_covariates <- paste0(covariates[grep("1", covariates)], collapse = "+")
-  form_denom_t1 <- as.formula(paste0(treatment[1], "~", first_time_covariates, "+", paste0(baseline, collapse = "+")))
+  form_denom_t1 <- as.formula(paste0(treatment[1], "~", paste0(unlist(covariates[1]),collapse = "+"), "+", paste0(baseline, collapse = "+")))
   fit_denom_t1 <- glm(form_denom_t1, family = binomial(link = "logit"), data = obsdata)
   ps_denom_t1 <- predict(fit_denom_t1, type = "response")
   weights_temp[, 1] <- (1 - obsdata[, treatment[1]]) / (1 - ps_denom_t1) + obsdata[, treatment[1]] / ps_denom_t1

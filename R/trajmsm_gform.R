@@ -18,7 +18,7 @@
 #' @return \item{results_msm_gform}{Estimates of a LCGA-MSM with g-formula.}
 #' @export trajmsm_gform
 #' @examples
-#' Obsdata_long = gendata_trajmsm(n = 1000, include_censor = TRUE, format = "long", seed = 945)
+#' Obsdata_long = gendata_trajmsm(n = 1000, format = "long", seed = 945)
 #' baseline_var <- c("age","sex")
 #' covariates <- list(c("hyper2011", "bmi2011"),c("hyper2012", "bmi2012"),c("hyper2013", "bmi2013"))
 #' treatment_var <- c("statins2011","statins2012","statins2013")
@@ -33,7 +33,7 @@
 #'     AggTrajData
 #'trajmsm_long[ , "traj_group"] <- trajmsm_long[ , "class"]
 #' trajmsm_wide = reshape(trajmsm_long, direction = "wide", idvar = "id",
-#' v.names = c("statins","bmi","hyper","censor"), timevar = "time", sep ="")
+#' v.names = c("statins","bmi","hyper"), timevar = "time", sep ="")
 #' formulaY =  as.formula(" y ~ statins2011 + statins2012 + statins2013 + hyper2011 + bmi2011 + hyper2012 + bmi2012 +
 #'                                     hyper2013 + bmi2013 + age + sex ")
 #'trajmsm_gform(formula = formulaY, identifier = "id", baseline = baseline, covariates = covariates,

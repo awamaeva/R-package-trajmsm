@@ -5,18 +5,18 @@
 #' @param treatment Time-varying treatment.
 #' @param covariates Time-varying covariates.
 #' @param baseline Baseline covariates.
-#' @param total_follow_up Total length of follow-up.
+#' @param total_followup Total length of follow-up.
 #' @param obsdata Observed data in wide format.
 #' @return Stabilized inverse of treatment probabilities
 #' @export
 #' @author Awa Diop, Denis Talbot
 
-stabilized_iptw <- function(identifier, treatment, covariates, baseline, total_follow_up, obsdata) {
+stabilized_iptw <- function(identifier, treatment, covariates, baseline, total_followup, obsdata) {
   if (!is.data.frame(obsdata)) {
     stop("obsdata needs to be a data frame")
   }
 
-  required_args <- c("identifier", "baseline", "covariates", "treatment", "total_follow_up", "obsdata")
+  required_args <- c("identifier", "baseline", "covariates", "treatment", "total_followup", "obsdata")
   missing_args <- setdiff(required_args, names(match.call()))
   if (length(missing_args) > 0) {
     stop(paste(missing_args, collapse = ", "), " not specified")
@@ -43,7 +43,7 @@ stabilized_iptw <- function(identifier, treatment, covariates, baseline, total_f
 
   first_time_covariates <- paste0(covariates[grep("1", covariates)], collapse = "+")
   form_num_t1 <- as.formula(paste0(treatment[1], "~ 1"))
-  form_denom_t1 <- as.formula(paste0(treatment[1], "~", first_time_covariates, "+", paste0(baseline, collapse = "+")))
+  form_denom_t1 <- as.formula(paste0(treatment[1], "~", paste0(unlist(covariates[1]),collapse = "+"), "+", paste0(baseline, collapse = "+")))
 
   fit_num_t1 <- glm(form_num_t1, family = binomial(link = "logit"), data = obsdata)
   fit_denom_t1 <- glm(form_denom_t1, family = binomial(link = "logit"), data = obsdata)

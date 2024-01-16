@@ -1,6 +1,6 @@
 #' @title Marginal Structural Model and Latent Class of Growth Analysis estimated with IPW
 #' @description Combine Marginal Structural Model and Latent Class of Growth Analysis
-#' @name trajHRMSM_IPW
+#' @name trajhrmsm_ipw
 #' @param formulaY specification of the model for the outcome to be fitted for a binomial or gaussian distribution.
 #' @param formula_traj specification of the model to buil the trajectory groups.
 #' @param family specification of the error distribution and link function to be used in the model.

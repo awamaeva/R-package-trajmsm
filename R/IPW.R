@@ -14,14 +14,13 @@
 #' @export
 #' @author Awa Diop, Denis Talbot
 #' @examples
-#' Obsdata = gendata_trajmsm(n = 1000, include_censor = TRUE, format = "wide", seed = 745)
+#' Obsdata = gendata_trajmsm(n = 1000, format = "wide", seed = 945)
 #' baseline_var <- c("age","sex")
 #'covariates <- list(c("hyper2011", "bmi2011"),c("hyper2012", "bmi2012"),c("hyper2013", "bmi2013"))
 #' treatment_var <- c("statins2011","statins2012","statins2013")
-#' censor_var = c("censor2011","censor2012","censor2013")
 #' stabilized_weights = inverse_probability_weighting(numerator = "stabilized", identifier = "id",
 #'         covariates = covar, treatment = treatment_var, baseline = baseline_var,
-#'           total_follow_up = 3,include_censor = TRUE,censor = censor_var, obsdata = Obsdata)
+#'           total_follow_up = 3,obsdata = Obsdata)
 
 inverse_probability_weighting <- function(numerator = c("stabilized", "unstabilized"), identifier,
                                           baseline, covariates, treatment,
