@@ -1,4 +1,4 @@
-# R-package-trajMSM
+# R-package-trajmsm
 
 <p align="center">
   <img src="vignettes/trajmsm_logo.png" alt="" width="200">
