@@ -2,6 +2,11 @@
 
 ![Logo of MyPackage](vignettes/trajmsm_logo.png)
 
+<p align="center">
+  <img src="vignettes/trajmsm_logo.png" alt="" width="200">
+</p>
+
+
 
 The `trajmsm` package is inspired by the paper "Marginal Structural Models with Latent Class Growth Analysis of Treatment Trajectories," published in *Statistical Methods for Medical Research*. [Read the paper](https://journals.sagepub.com/doi/pdf/10.1177/09622802231202384). 
 
