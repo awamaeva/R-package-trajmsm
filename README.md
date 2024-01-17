@@ -6,7 +6,7 @@ Latent Class Growth Analysis (LCGA) is increasingly used to summarize longitudin
 
 Integrating LCGA with MSM (termed LCGA-MSM) offers an effective way to describe treatment adherence and control time-dependent confounding. Common methods to estimate MSM parameters include Inverse Probability Weighting (IPW), which creates a pseudo-population for balanced treatment groups. In longitudinal settings, IPW adjusts for time-varying covariates impacted by previous exposures and selection bias.
 
-In this initial version of `trajMSM`, we estimate LCGA-MSM parameters using IPW, g-computation, and pooled Longitudinal Targeted Maximum Likelihood Estimation (LTMLE). We also introduce an extension for time-dependent outcomes, termed LCGA-History-Restricted MSM (LCGA-HRMSM), with the same three estimators.
+In this initial version of `trajmsm`, we estimate LCGA-MSM parameters using IPW, g-computation, and pooled Longitudinal Targeted Maximum Likelihood Estimation (LTMLE). We also introduce an extension for time-dependent outcomes, termed LCGA-History-Restricted MSM (LCGA-HRMSM), with the same three estimators.
 
 For access to the R codes, visit our [GitHub repository](https://github.com/awamaeva/R-package-trajMSM).
 
