@@ -1,10 +1,10 @@
-Package: trajMSM
+Package: trajmsm
 Type: Package
 Title: Marginal Structural Models with Latent Class Growth Analysis of Treatment Trajectories
 Version: 0.1.0
 Author: Awa Diop, Denis Talbot
 Maintainer: Awa Diop <awa.diop.2@ulaval.ca>
-Description: The package trajMSM is based on the paper Marginal Structural Models with Latent Class Growth Analysis of Treatment Trajectories: https://doi.org/10.48550/arXiv.2105.12720. 
+Description: The package trajmsm is based on the paper Marginal Structural Models with Latent Class Growth Analysis of Treatment Trajectories:https://journals.sagepub.com/doi/pdf/10.1177/09622802231202384. 
 License: GPL-3
 Encoding: UTF-8
 Imports: 

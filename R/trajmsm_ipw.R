@@ -27,22 +27,22 @@
 #' treatment_var <- c("statins2011","statins2012","statins2013")
 #' formula = as.formula(cbind(statins, 1 - statins) ~ time)
 #' restraj = build_traj(obsdata = Obsdata_long, number_traj = 3, formula = formula, identifier = "id")
-#' Datapost = restraj$data_post
-#' trajmsm_long <- merge(Obsdata_long, Datapost, by = "id")
+#' datapost = restraj$data_post
+#' trajmsm_long <- merge(Obsdata_long, datapost, by = "id")
 #'     AggFormula <- as.formula(paste("statins", "~", "time", "+", "class"))
 #'     AggTrajData <- aggregate(AggFormula, data = trajmsm_long, FUN = mean)
 #'     AggTrajData
 #' trajmsm_long[ , "class"] <- relevel(trajmsm_long[ , "class"], ref = "3")
 #' trajmsm_wide = reshape(trajmsm_long, direction = "wide", idvar = "id",
 #' v.names = c("statins","bmi","hyper"), timevar = "time", sep ="")
-#'trajmsm_ipw(formula1 = as.formula("y ~ class"),
+#' trajmsm_ipw(formula1 = as.formula("y ~ class"),
 #'            identifier = "id", baseline = baseline_var, covariates = covar, treatment = treatment_var,
-#'            y="y", number_traj=3,total_followup = 3, family = "binomial",
+#'            number_traj=3,total_followup = 3, family = "binomial",
 #'            obsdata = trajmsm_wide,numerator = "stabilized", include_censor = FALSE)
 
 
 trajmsm_ipw <- function(formula1, formula2, family, identifier, treatment, covariates,
-                         baseline, y, total_followup, number_traj, obsdata,
+                         baseline, total_followup, number_traj, obsdata,
                          numerator = "stabilized",include_censor, censor, weights = NULL, treshold = 0.99) {
 
   # Compute weights if not provided

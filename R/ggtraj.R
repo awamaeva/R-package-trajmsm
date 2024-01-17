@@ -13,9 +13,9 @@
 #' @import ggplot2 flexmix
 #' @export ggtraj
 #' @examples
-#' Obsdata = gendata_trajmsm(n = 1000, include_censor = FALSE, format = "long", seed = 745)
-#' Formula = as.formula(cbind(statins, 1 - statins) ~ time)
-#' Restraj = build_traj(obsdata = Obsdata, number_traj = 3, formula = Formula, identifier = "id")
+#' Obsdata = gendata_trajmsm(n = 1000, format = "long", seed = 945)
+#' formulaA = as.formula(cbind(statins, 1 - statins) ~ time)
+#' restraj = build_traj(obsdata = Obsdata, number_traj = 3, formula = Formula, identifier = "id")
 #' Datapost = Restraj$data_post
 #' head(Datapost)
 #' traj_data_long <- merge(Obsdata, Datapost, by = "id")

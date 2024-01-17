@@ -22,8 +22,8 @@
 #' time_values <- c(2011,2012,2013)
 #' formulaA = as.formula(cbind(statins, 1 - statins) ~ time)
 #' restraj = build_traj(obsdata = Obsdata_long, number_traj = 3, formula = formulaA, identifier = "id")
-#' Datapost = restraj$data_post
-#' trajmsm_long <- merge(Obsdata_long, Datapost, by = "id")
+#' datapost = restraj$data_post
+#' trajmsm_long <- merge(Obsdata_long, datapost, by = "id")
 #'     AggFormula <- as.formula(paste("statins", "~", "time", "+", "class"))
 #'     AggTrajData <- aggregate(AggFormula, data = trajmsm_long, FUN = mean)
 #'     AggTrajData
@@ -74,7 +74,7 @@ trajmsm_pltmle <- function(formula = formula,identifier,baseline,covariates,trea
     # Estimation
     obsdata_pool$TMLE_group = class
     obsdata_pool$TMLE_group <- relevel(as.factor(obsdata_pool$TMLE_group), ref = ref)
-    mod = glm(Y~factor(TMLE_group), family = quasibinomial, data = obsdata_pool);
+    mod = glm(Y~TMLE_group, family = quasibinomial, data = obsdata_pool);
     coefs = summary(mod)$coefficients[,1];
     X = model.matrix(mod)[1:nregimes,]
     B = matrix(coefs, nrow = number_traj);

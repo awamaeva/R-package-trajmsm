@@ -100,7 +100,7 @@ trajmsm_gform <- function(formula = formula, rep = 50,
     #Estimation
     mod = summary(glm(Y ~ gform_group, family = quasibinomial, data = obsdataG));
     coefs.mean = mod$coefficients[,1]
-    se=apply(result.coef.boot,2,sd)
+    se = apply(result.coef.boot,2,sd)
     pvalue <- 2*pnorm(-abs(coefs.mean)/se)
     lo.ci = coefs.mean - 1.96*se
     up.ci = coefs.mean + 1.96*se
