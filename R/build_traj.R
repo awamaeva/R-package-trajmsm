@@ -13,9 +13,9 @@
 #' @import flexmix
 #' @export build_traj
 #' @examples
-#' Obsdata = gendata_trajmsm(n = 100, include_censor = FALSE, format = "long", seed = 345)
-#' Formula = as.formula(cbind(statins, 1 - statins) ~ time)
-#' Restraj = build_traj(obsdata = Obsdata, number_traj = 3, formula = Formula, identifier = "id")
+#' obsdata_long = gendata_trajmsm(n = 1000,format = "long", seed = 345)
+#' formula = as.formula(cbind(statins, 1 - statins) ~ time)
+#' restraj = build_traj(obsdata = obsdata_long, number_traj = 3, formula = Formula, identifier = "id")
 
 build_traj <- function(obsdata, formula, number_traj, identifier, family = "binomial", seed = 945,
                        control = list(iter.max = 1000, minprior = 0), ...) {

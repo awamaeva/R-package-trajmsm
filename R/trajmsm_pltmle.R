@@ -14,7 +14,7 @@
 #' @param ref the reference group.
 #' @export trajmsm_pltmle
 #' @examples
-#' Obsdata_long = gendata_trajmsm(n = 2000, format = "long", seed = 945)
+#' Obsdata_long = gendata(n = 2000, format = "long", total_followup = 3, seed = 945)
 #' baseline_var <- c("age","sex")
 #' covariates <- list(c("hyper2011", "bmi2011"),c("hyper2012", "bmi2012"),c("hyper2013", "bmi2013"))
 #' treatment_var <- c("statins2011","statins2012","statins2013")
@@ -40,7 +40,7 @@
 
 
 trajmsm_pltmle <- function(formula = formula,identifier,baseline,covariates,treatment,outcome,
-                                 number_traj,total_followup, time,time_values,trajmodel,ref,obsdata,treshold){
+                                 number_traj,total_followup, time,time_values,trajmodel,ref,obsdata,treshold=0.999){
 
  stopifnot(!is.null(identifier));
  stopifnot(!is.null(baseline));

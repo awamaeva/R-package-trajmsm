@@ -21,8 +21,8 @@
 #' time_values <- c(2011,2012,2013)
 #' formulaA = as.formula(cbind(statins, 1 - statins) ~ time)
 #' restraj = build_traj(obsdata = Obsdata_long, number_traj = 3, formula = formulaA, identifier = "id")
-#' Datapost = restraj$data_post
-#' trajmsm_long <- merge(Obsdata_long, Datapost, by = "id")
+#' datapost = restraj$data_post
+#' trajmsm_long <- merge(Obsdata_long, datapost, by = "id")
 #'     AggFormula <- as.formula(paste("statins", "~", "time", "+", "class"))
 #'     AggTrajData <- aggregate(AggFormula, data = trajmsm_long, FUN = mean)
 #'     AggTrajData

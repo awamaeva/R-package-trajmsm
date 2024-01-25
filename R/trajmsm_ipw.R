@@ -8,7 +8,6 @@
 #' @param treatment Time-varying treatment.
 #' @param baseline Baseline covariates.
 #' @param covariates Time-varying covariates.
-#' @param y Outcome of interest.
 #' @param total_followup Number of measuring times.
 #' @param number_traj An integer to fix the number of trajectory groups.
 #' @param obsdata Dataset to be used in the analysis.
@@ -21,7 +20,7 @@
 #' @importFrom survival coxph
 #' @import flexmix
 #' @examples
-#' Obsdata_long = gendata_trajmsm(n = 1000, format = "long", seed = 945)
+#' Obsdata_long = gendata(n = 1000, format = "long", total_followup = 3, seed = 945)
 #' baseline_var <- c("age","sex")
 #' covariates <- list(c("hyper2011", "bmi2011"),c("hyper2012", "bmi2012"),c("hyper2013", "bmi2013"))
 #' treatment_var <- c("statins2011","statins2012","statins2013")

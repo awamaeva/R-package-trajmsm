@@ -1,7 +1,7 @@
 #' @title Pooled LTMLE
 #' @description function to estimate parameters of a HRMSM-LCGA using Pooled LTMLE
-#' @name trajHRMSM_pltmle
-#' @param L time-varying covariates.
+#' @name trajhrmsm_pltmle
+#' @param covariates names of time-varying covariates.
 #' @param V baseline covariates.
 #' @param A time-varying treatment.
 #' @param id name of the id column variable.
