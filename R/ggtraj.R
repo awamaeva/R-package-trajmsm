@@ -13,17 +13,17 @@
 #' @import ggplot2 flexmix
 #' @export ggtraj
 #' @examples
-#' Obsdata = gendata(n = 1000, format = "long", total_followup = 12, seed = 945)
-#' restraj = build_traj(obsdata = Obsdata, number_traj = 3, formula = as.formula(cbind(statins, 1 - statins) ~ time), identifier = "id")
+#' obsdata_long = gendata(n = 1000, format = "long", total_followup = 12, seed = 945)
+#' restraj = build_traj(obsdata = obsdata_long, number_traj = 3, formula = as.formula(cbind(statins, 1 - statins) ~ time), identifier = "id")
 #' datapost = restraj$data_post
 #' head(datapost)
-#' traj_data_long <- merge(Obsdata, datapost, by = "id")
+#' traj_data_long <- merge(obsdata_long, datapost, by = "id")
 #'     AggFormula <- as.formula(paste("statins", "~", "time", "+", "class"))
 #'     Aggtraj_data <- aggregate(AggFormula, data = traj_data_long, FUN = mean)
 #'     Aggtraj_data
 #' #Aggtraj_data with labels
-#' traj_data_long[ , "traj_group"] <- factor(ifelse(traj_data_long[ , "class"] == "2" ,"Group1" ,
-#' ifelse (traj_data_long[ , "class"]== "1" , "Group2" ,"Group3")))
+#' traj_data_long[ , "traj_group"] <- factor(ifelse(traj_data_long[ , "class"] == "2" ,"Group3" ,
+#' ifelse (traj_data_long[ , "class"]== "1" , "Group1" ,"Group2")))
 #' AggFormula <- as.formula(paste("statins", "~", "time", "+", "traj_group"))
 #' Aggtraj_data <- aggregate(AggFormula, data = traj_data_long, FUN = mean)
 #' ggtraj(traj_data =  Aggtraj_data,

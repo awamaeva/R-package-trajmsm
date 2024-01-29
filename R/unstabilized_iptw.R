@@ -12,14 +12,14 @@
 #' @author Awa Diop, Denis Talbot
 #' @note This function requires data in a wide format.
 
-unstabilized_iptw <- function(identifier, treatment, covariates, baseline, total_follow_up, obsdata) {
+unstabilized_iptw <- function(identifier, treatment, covariates, baseline, total_followup, obsdata) {
   # Check if observed data is in the correct format
   if (!is.data.frame(obsdata)) {
     stop("obsdatamust be a data frame in wide format")
   }
 
   # Validate the presence of required arguments
-  required_args <- c("identifier", "treatment", "covariates", "baseline", "total_follow_up", "obsdata")
+  required_args <- c("identifier", "treatment", "covariates", "baseline", "total_followup", "obsdata")
   missing_args <- setdiff(required_args, names(match.call()))
   if (length(missing_args) > 0) {
     stop(paste(missing_args, collapse = ", "), " not specified")

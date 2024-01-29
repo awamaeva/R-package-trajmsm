@@ -82,7 +82,7 @@ pltmle <- function(formula, outcome, treatment, covariates, baseline, ntimes_int
   # Compute the weights for all different regimes of treatment
   Weights = inverse_probability_weighting(identifier = identifier, covariates = covariates,
                                           treatment = treatment, baseline = baseline,
-                                          total_follow_up = total_followup, numerator = "unstabilized",
+                                          total_followup = total_followup, numerator = "unstabilized",
                                           include_censor = include_censor, censor = censor,obsdata = obsdata)[[1]];
 
   weights_trunc <- sapply(1:ntimes_interval, function(x){
@@ -142,23 +142,24 @@ pltmle <- function(formula, outcome, treatment, covariates, baseline, ntimes_int
     Ds = lapply(1:nregimes,function(x) sapply(1:number_traj,function(y)
       as.matrix(Hs.all[[x]][,y]*(Qstar[[x]]-Qstarm1[[x]]))))
     D_list[i]<-list(Ds)
+    Qstar = Qstarm1;
   }
 
 
 
   # Aggregate the results
   Q0 = unlist(Qstar)
-  obsdata0.all2$outcome = Q0
+  obsdata0.all2$Y = Q0
   obsdata0.all2$atraj = apply(obsdata0.all2[, treatment], 1, paste0, collapse = "")
-  obsdataT2 = aggregate(outcome ~ atraj, data = obsdata0.all2, FUN = mean)
-  obsdataT2$outcome = as.numeric(as.character(obsdataT2$outcome))
+  obsdataT2 = aggregate(Y ~ atraj, data = obsdata0.all2, FUN = mean)
+  obsdataT2$Y = as.numeric(as.character(obsdataT2$Y))
 
   #Influence curves
   D = lapply(1:nregimes,function(x) as.matrix(Reduce('+',lapply(1:number_traj, function(y){
     comps = as.matrix(D_list[[y]][[x]] +  as.numeric(Qstar[[x]] - mean(Qstar[[x]])))
     return(comps)
   }))))
-  list_pltmle_countermeans = list(counter_means = obsdataT2$outcome, D = D)
+  list_pltmle_countermeans = list(counter_means = obsdataT2$Y, D = D)
   return(list_pltmle_countermeans)
 }
 

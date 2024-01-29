@@ -6,7 +6,7 @@
 #' @param baseline Name of the baseline covariates.
 #' @param covariates Name of the time-varying covariates.
 #' @param treatment Name of the time-varying treatment.
-#' @param total_follow_up Total length of follow-up.
+#' @param total_followup Total length of follow-up.
 #' @param include_censor Logical value TRUE/FALSE to include or not a censoring variable.
 #' @param censor Name of the censoring variable.
 #' @param obsdata Observed data in wide format.
@@ -20,11 +20,11 @@
 #' treatment_var <- c("statins2011","statins2012","statins2013")
 #' stabilized_weights = inverse_probability_weighting(numerator = "stabilized", identifier = "id",
 #'         covariates = covar, treatment = treatment_var, baseline = baseline_var,
-#'           total_follow_up = 3,obsdata = Obsdata)
+#'           total_followup = 3,obsdata = Obsdata)
 
 inverse_probability_weighting <- function(numerator = c("stabilized", "unstabilized"), identifier,
                                           baseline, covariates, treatment,
-                                          total_follow_up, include_censor = FALSE, censor,
+                                          total_followup, include_censor = FALSE, censor,
                                           obsdata){
   if (!is.data.frame(obsdata)) {
     stop("obsdata must be a data frame in wide format")
@@ -35,11 +35,11 @@ inverse_probability_weighting <- function(numerator = c("stabilized", "unstabili
 
   ipw_result <- switch(numerator,
                        "unstabilized" = ifelse(include_censor,
-                                               unstabilized_ipcw(identifier, treatment, covariates, baseline, censor, total_follow_up, obsdata),
-                                               unstabilized_iptw(identifier, treatment, covariates, baseline, total_follow_up, obsdata)),
+                                               unstabilized_ipcw(identifier, treatment, covariates, baseline, censor, total_followup, obsdata),
+                                               unstabilized_iptw(identifier, treatment, covariates, baseline, total_followup, obsdata)),
                        "stabilized" = ifelse(include_censor,
-                                             stabilized_ipcw(identifier, treatment, covariates, baseline, censor, total_follow_up, obsdata),
-                                             stabilized_iptw(identifier, treatment, covariates, baseline, total_follow_up, obsdata))
+                                             stabilized_ipcw(identifier, treatment, covariates, baseline, censor, total_followup, obsdata),
+                                             stabilized_iptw(identifier, treatment, covariates, baseline, total_followup, obsdata))
   )
 
   class(ipw_result) <- "IPW"

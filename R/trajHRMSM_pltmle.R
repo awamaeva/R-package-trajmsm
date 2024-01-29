@@ -14,101 +14,136 @@
 #' @noRd
 #' @return \item{results_hrmsm_pltmle}{Results from the LCGA-HRMSM with pooled ltmle}
 #' @author Awa Diop Denis Talbot
+#' @examples
+#' obsdata_long = gendata(n = 1000, format = "long", total_followup = 8, timedep_outcome = TRUE,  seed = 945)
+#' baseline_var <- c("age","sex")
+#' years <- 2011:2018
+#' variables <- c("hyper", "bmi")
+#' covariates <- lapply(years, function(year) {
+#' paste0(variables, year)})
+#' treatment_var <- paste0("statins", 2011:2018)
+#' var_cov <- c("statins","hyper", "bmi","y")
+#' respltmle = trajhrmsm_pltmle(degree_traj = "linear", treatment = treatment_var,covariates = covariates, baseline = baseline_var,
+#' outcome = paste0("y", 2016:2018),var_cov = var_cov, ntimes_interval = 6, total_followup = 8, time = "time",time_values = years, identifier = "id",
+#'                            number_traj = 3, family = "poisson", obsdata = obsdata_long)
+#' respltmle$results_hrmsm_pltmle
 
 
-trajHRMSM_pltmle <- function(obsdata,
-                                 degree_traj = c("linear","quadratic","cubic"),
-                                 A,L,V,Y, s,K, timevar, idvar,
-                                 J = 3, family = "poisson"){
 
-  stopifnot(!is.null(list_obsdata));
-  stopifnot(!is.null(s));
-  stopifnot(!is.null(A));
-  stopifnot(!is.null(idvar));
+trajhrmsm_pltmle <-  function(degree_traj = c("linear","quadratic","cubic"),
+                              treatment,covariates,baseline,outcome, ntimes_interval,
+                              total_followup, time, time_values,identifier, var_cov,
+                              number_traj = 3, family = "poisson",obsdata){
 
-  size = 2^s
-  nb_sub = K-s +1
+  nb_sub = total_followup - ntimes_interval + 1
+  nregimes = 2^ntimes_interval
   list_obsdataG <- list()
-  list_obsdata = split_data(obsdata = obsdata, K = K, s = s, timevar = timevar, idvar = idvar)
+  list_obsdata = split_data(obsdata = obsdata, total_followup = total_followup,
+                            ntimes_interval = ntimes_interval,
+                            time = time,time_values = time_values, identifier = identifier)
   #Trajectory model and identification of the reference group
   dat_sub <- data.frame(do.call(rbind, list_obsdata))
-
-  #Choice of degree for the polynomial form to build the trajectory groups
+  treatment_names <- sub("\\d+", "", treatment)
+  treatment_name <- unique(treatment_names)[1]
+  #Choice of degree for the polynomial form to buil the trajectory groups
   if(degree_traj == "linear"){
-    res_traj = buildtraj(Rdat = na.omit(dat_sub[,c(A,"time2","id2")]), J=J,formula = cbind(A,1-A) ~ time2, id="id2")
+
+    restraj = build_traj(obsdata  = na.omit(dat_sub[,c(treatment_name,"time2","identifier2")]),
+                         number_traj = number_traj,formula = as.formula(paste("cbind(", treatment_name, ", 1 -", treatment_name, ") ~ time2")),
+                         identifier = "identifier2")
   }
 
   if(degree_traj == "quadratic"){
-    res_traj = buildtraj(Rdat = na.omit(dat_sub[,c(A,"time2","id2")]), J=J,formula = cbind(A,1-A) ~ time2 + I(time2^2), id="id2")
+
+    restraj = build_traj(obsdata = na.omit(dat_sub[,c(treatment_name,"time2","identifier2")]), number_traj = number_traj,
+                         formula  = as.formula(paste("cbind(", treatment_name, ", 1 -", treatment_name, ") ~ time2 + I(time2^2)")),
+                         identifier = "identifier2")
   }
 
   if(degree_traj == "cubic"){
-    res_traj = buildtraj(Rdat = na.omit(dat_sub[,c(A,"time2","id2")]), J=J,formula = time2 + I(time2^2) + I(time2^3), id="id2")
+
+    restraj = build_traj(obsdata = na.omit(dat_sub[,c(treatment_name,"time2","identifier2")]), number_traj = number_traj,
+                         formula  = as.formula(paste("cbind(", treatment_name, ", 1 -", treatment_name, ") ~ time2 + I(time2^2) + I(time2^3)")),
+                         identifier = "identifier2")
   }
 
-  trajmodel = res_traj$model
-  dclass <- data.frame(traj = factor(res_traj$dpost[,"class"]), id2 = res_traj$dpost[,"id2"])
-  dat_final <- merge(dat_sub, dclass, by = "id2")
-  mean_adh <- aggregate(as.formula(paste0(A, "~", "traj")), FUN = mean, data = dat_final)
+  dclass <- data.frame(ptmle_group = factor(restraj$data_post[,"class"]), identifier2 = restraj$data_post[,"identifier2"])
+  dat_final <- merge(dat_sub, dclass, by = "identifier2")
+  mean_adh <- aggregate(as.formula(paste0(treatment_name, "~", "ptmle_group")), FUN = mean, data = dat_final)
   ord_adh<- order(-mean_adh[,2])
-  ref <- ord_adh[length(ord_adh)]
-  nb_regimes = 2^s #number of treatment regimes
+  ref <- as.character(ord_adh[length(ord_adh)])
+  nregimes = 2^ntimes_interval #number of treatment regimes
 
   # Prediction of trajectory groups for each treatment regime
-  class = predicTraj(t = s, trajmodel = trajmodel,
-                     trt = A, time_name = "time2", id = "id2")$postclass
+  treatment_names <- sub("\\d+", "", treatment)
+  treatment_name <- unique(treatment_names)[1]
+  class = factor(predict_traj(identifier = "identifier2", total_followup = ntimes_interval,
+                              treatment = treatment_name, time = "time2",
+                              trajmodel = restraj$traj_model)$post_class);
 
-  Traj=t(sapply(1:nb_regimes,function(x)sapply(1:J,function(i) ifelse(class[x]==i,1,0))))
-  Traj[,1]=1 #Intercept
+  if(length(unique(class)) < number_traj){stop("number of trajectory groups identified is inferior to the target number.")}
 
-  list_daTpool <- list()
+  if(length(unique(class)) == number_traj){
+
+  traj_indic=t(sapply(1:nregimes,function(x)sapply(1:number_traj,function(i) ifelse(class[x]==i,1,0))))
+  traj_indic[,1]=1 #Intercept
+
+  list_obsdata_pool <- list()
   list_D <- list()
-  df = list_obsdata[[1]];
-  df1 = longtowide(df, v.names = c(A,L,Y,"time", "Interv","time2","id2"))
-  cnames <- colnames(df1)
+
   for(i in 1:nb_sub){
-    form = paste0(paste0(Y,".",nb_sub, "~"), paste0(A,".", 1:s,collapse = "+"), "+",
-                  paste0(L,".", i:s,collapse = "+"),"+",
-                  V, collapse = "+")
   #Create the data under all the different regime of treatment
   df = list_obsdata[[i]];
-  df_l = longtowide(df, v.names = c(A,L,Y,"time", "Interv","time2","id2"))
-  colnames(df_l)<-cnames
-  res = sub_pltmle2(obsdata = df_l,Traj = Traj,formula = form,
-                        Y=Y,A=A,L=L,V=V,s=s, time = 1:s,timevar = timevar)
+  df_l = reshape(df, direction = "wide", idvar = identifier, v.names = var_cov, timevar = time, sep ="")
 
-  datTpool = data.frame(Y=res$counter.means)
-  datTpool$TMLE.group = class
-  datTpool$time <- i
+  outcome_up <- outcome[outcome %in% colnames(df_l)]
+  treatment_up <- treatment[treatment %in% colnames(df_l)]
+  cov_up <- lapply(covariates, function(x)x[x %in% colnames(df_l)])
+  # Remove elements that are character(0)
+  cov_up  <-  cov_up [sapply( cov_up , length) > 0]
 
-  list_daTpool[i] <- list(datTpool)
-  list_D[i] = list(res$D)
+
+  form = paste0(outcome_up, "~", paste0(treatment_up,collapse = "+"), "+",
+                paste0(unlist(cov_up), collapse = "+"),"+",
+                paste0(baseline, collapse = "+"))
+
+  res_pltmle = pltmle(formula = form, outcome = outcome_up,treatment = treatment_up,
+                      covariates = cov_up, baseline = baseline, ntimes_interval = ntimes_interval, number_traj = number_traj,
+                      time =  time,identifier = identifier,obsdata = df_l,traj=traj_indic, treshold = treshold);
+
+  obsdata_pool= data.frame(Y=res_pltmle$counter_means);
+  D=res_pltmle$D; #Influence functions
+  obsdata_pool$tmle_group = class
+  obsdata_pool$Interv <- i
+
+  list_obsdata_pool[i] <- list(obsdata_pool)
+  list_D[i] = list(D)
 
   }
 
-  all_datTpool <- data.frame(do.call(rbind, list_daTpool))
-  all_datTpool$TMLE.group <- relevel(factor(all_datTpool$TMLE.group), ref = ref)
+  all_obsdata_pool <- data.frame(do.call(rbind, list_obsdata_pool))
+  all_obsdata_pool$tmle_group <- relevel(factor(all_obsdata_pool$tmle_group), ref = ref)
   # Estimation
-  mod = glm(Y ~ factor(TMLE.group) + factor(time), data =  all_datTpool, family = family);
-  coefs = summary(mod)$coefficients[1:J,1];
+  mod = glm(Y ~ factor(tmle_group) + factor(Interv), data =  all_obsdata_pool, family = family);
+  coefs = summary(mod)$coefficients[1:number_traj,1];
 
 
   #Influence functions
   Db_list  <- list()
-  Xall = t(model.matrix(mod))[1:J,]
-  X = Xall[,1:size]
-  B  = matrix(coefs, nrow = J);
+  Xall = t(model.matrix(mod))[1:number_traj,]
+  X = Xall[,1:nregimes]
+  B  = matrix(coefs, nrow = number_traj);
 
-  len = seq(size,ncol(Xall),size-1)
-  # We have to select the corresponding model matrix for each time-interval (size*nb_sub)
+  len = seq(nregimes,ncol(Xall),nregimes-1)
+  # We have to select the corresponding model matrix for each time-interval (nregimes*nb_sub)
   CQ_list <- list()
   for(t in 1:(nb_sub-1)){
     #x = pairs[,t]
-    Db = matrix(0, nrow = nrow(list_D[[t]][[1]]), ncol = J);
-    CQ = lapply(1:size,function(i)(as.matrix(X[,i]))%*%(t(exp(as.matrix(t(X[,i]))%*%B)))%*%t(as.matrix(((X[,i])))));
+    Db = matrix(0, nrow = nrow(list_D[[t]][[1]]), ncol = number_traj);
+    CQ = lapply(1:nregimes,function(i)(as.matrix(X[,i]))%*%(t(exp(as.matrix(t(X[,i]))%*%B)))%*%t(as.matrix(((X[,i])))));
     CQ = Reduce('+',CQ);
     CQ_list[t] <- list(CQ)
-    for(l in 1:size){
+    for(l in 1:nregimes){
       Db = Db+as.matrix(list_D[[t]][[l]])%*%solve(CQ);
     }
 
@@ -118,11 +153,11 @@ trajHRMSM_pltmle <- function(obsdata,
 
   #Last Window
   X = Xall[, len[nb_sub-1]:ncol(Xall)]
-  CQ = lapply(1:size,function(i)(as.matrix(X[,i]))%*%(t(exp(as.matrix(t(X[,i]))%*%B)))%*%t(as.matrix(((X[,i])))));
+  CQ = lapply(1:nregimes,function(i)(as.matrix(X[,i]))%*%(t(exp(as.matrix(t(X[,i]))%*%B)))%*%t(as.matrix(((X[,i])))));
   CQ = Reduce('+',CQ);
   CQ_list[3] <- list(CQ)
-  Db = matrix(0, nrow = nrow(list_D[[nb_sub]][[1]]), ncol = J);
-  for(l in 1:size){
+  Db = matrix(0, nrow = nrow(list_D[[nb_sub]][[1]]), ncol = number_traj);
+  for(l in 1:nregimes){
     Db = Db+as.matrix(list_D[[nb_sub]][[l]])%*%solve(CQ);
   }
 
@@ -133,7 +168,7 @@ trajHRMSM_pltmle <- function(obsdata,
   #All pairs of 2 without repetition
   pairs = combn(nb_sub, 2)
   list_df = Db_list
-  #sample size for each dataframe of influences functions
+  #sample nregimes for each dataframe of influences functions
   n_df <- lapply(list_obsdata, function(x) nrow(na.omit(data.frame(x))))
 
   #variances
@@ -149,17 +184,17 @@ trajHRMSM_pltmle <- function(obsdata,
     temp_df1 = data.frame(list_df[[x[1]]])
     temp_df2 = data.frame(list_df[[x[2]]])
 
-    temp_df1$id1 <- list_obsdata[[x[1]]][1:nrow(temp_df1),idvar]
-    temp_df2$id2 <- list_obsdata[[x[2]]][1:nrow(temp_df2),idvar]
+    temp_df1$id1 <- list_obsdata[[x[1]]][1:nrow(temp_df1),identifier]
+    temp_df2$id2 <- list_obsdata[[x[2]]][1:nrow(temp_df2),identifier]
 
-    vrc = sapply(1:J, function(j){
+    vrc = sapply(1:number_traj, function(j){
       res = mean(temp_df1[temp_df1$id1%in%temp_df2$id2,j]*temp_df2[temp_df2$id2%in%temp_df1$id1,j],na.rm = TRUE)-
         mean(temp_df1[temp_df1$id1%in%temp_df2$id2,j],na.rm = TRUE)*mean(temp_df2[temp_df2$id2%in%temp_df1$id1,j],na.rm = TRUE)
       return(res)})
     return(vrc)}
   )
 
-  # minimum sample size per pairs of values
+  # minimum sample nregimes per pairs of values
   min_ndf <- lapply(1:ncol(pairs),function(i){
     x = pairs[,i]
     min_ndf = min(n_df[[x[1]]], n_df[[x[2]]])
@@ -177,12 +212,13 @@ trajHRMSM_pltmle <- function(obsdata,
   )
 
   se = sqrt((Reduce('+',all_cov) + Reduce('+',all_var))/(Reduce('+',n_df)**2))
+  pvalue <- 2*pnorm(-abs(coefs)/se)
   #Results
   lo.ci = coefs - 1.96*se ;
   up.ci = coefs + 1.96*se
-  results_hrmsm_pltmle = cbind(coefs, se, lo.ci, up.ci)
-  colnames(results_hrmsm_pltmle) = c("estimate","std.error","lower CI", "Upper CI")
-  return(list(res_trajHRMSM = results_hrmsm_pltmle[2:J,], res_traj = res.traj, mean_adh = mean_adh))
+  results_hrmsm_pltmle = cbind(coefs, se, pvalue, lo.ci, up.ci)
+  colnames(results_hrmsm_pltmle) = c("Estimate", "Std.Error", "Pvalue", "Lower CI", "Upper CI");
+  return(list(results_hrmsm_pltmle= results_hrmsm_pltmle, restraj = restraj, mean_adh = mean_adh))
 }
 
-
+}

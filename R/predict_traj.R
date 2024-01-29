@@ -12,15 +12,15 @@
 #' @export predict_traj
 #' @author Awa Diop, Denis Talbot
 
-predict_traj <- function(identifier, total_followup, treatment, time, time_values, trajmodel,obsdata) {
+predict_traj <- function(identifier, total_followup, treatment, time, trajmodel) {
   data_combn <- bincombinations(total_followup)
 
   # Treatment regime in a long format
   rdata_counter <- reshape(data.frame(data_combn), direction = "long", varying = 1:total_followup, sep = "")
   colnames(rdata_counter) <- c(time, treatment, identifier)
-  rdata_counter[,time] <- time_values[rdata_counter[,time]]
 
-  post_probs <- posterior(trajmodel, newdata = data.frame(rdata_counter))
+  post_probs <- posterior(trajmodel, newdata = rdata_counter)
+
   rdata_counter$post_class <- apply(post_probs, 1, which.max)
 
   data_class <- aggregate(as.formula(paste0("post_class ~ ", identifier)), FUN = unique, data = rdata_counter)

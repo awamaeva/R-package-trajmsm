@@ -20,23 +20,28 @@
 #' @importFrom survival coxph
 #' @import flexmix
 #' @examples
-#' Obsdata_long = gendata(n = 1000, format = "long", total_followup = 3, seed = 945)
+#' obsdata_long = gendata(n = 1000, format = "long", total_followup = 6, seed = 945)
+#' years <- 2011:2016
 #' baseline_var <- c("age","sex")
-#' covariates <- list(c("hyper2011", "bmi2011"),c("hyper2012", "bmi2012"),c("hyper2013", "bmi2013"))
-#' treatment_var <- c("statins2011","statins2012","statins2013")
-#' formula = as.formula(cbind(statins, 1 - statins) ~ time)
-#' restraj = build_traj(obsdata = Obsdata_long, number_traj = 3, formula = formula, identifier = "id")
+#' variables <- c("hyper", "bmi")
+#' covariates <- lapply(years, function(year) {
+#' paste0(variables, year)})
+#' treatment_var <- paste0("statins", 2011:2016)
+#' formula_treatment = as.formula(cbind(statins, 1 - statins) ~ time)
+#' restraj = build_traj(obsdata = obsdata_long, number_traj = 3, formula = formula_treatment, identifier = "id")
 #' datapost = restraj$data_post
-#' trajmsm_long <- merge(Obsdata_long, datapost, by = "id")
+#' trajmsm_long <- merge(obsdata_long, datapost, by = "id")
 #'     AggFormula <- as.formula(paste("statins", "~", "time", "+", "class"))
 #'     AggTrajData <- aggregate(AggFormula, data = trajmsm_long, FUN = mean)
 #'     AggTrajData
-#' trajmsm_long[ , "class"] <- relevel(trajmsm_long[ , "class"], ref = "3")
-#' trajmsm_wide = reshape(trajmsm_long, direction = "wide", idvar = "id",
+#' trajmsm_wide = reshape(data = trajmsm_long, direction = "wide", idvar = "id",
 #' v.names = c("statins","bmi","hyper"), timevar = "time", sep ="")
+#' formula = paste0("y ~", paste0(treatment_var,collapse = "+"), "+",
+#'                 paste0(unlist(covariates), collapse = "+"),"+",
+#'                 paste0(baseline_var, collapse = "+"))
 #' trajmsm_ipw(formula1 = as.formula("y ~ class"),
-#'            identifier = "id", baseline = baseline_var, covariates = covar, treatment = treatment_var,
-#'            number_traj=3,total_followup = 3, family = "binomial",
+#'            identifier = "id", baseline = baseline_var, covariates = covariates, treatment = treatment_var,
+#'            number_traj=3,total_followup = 6, family = "binomial",
 #'            obsdata = trajmsm_wide,numerator = "stabilized", include_censor = FALSE)
 
 
@@ -48,7 +53,7 @@ trajmsm_ipw <- function(formula1, formula2, family, identifier, treatment, covar
   if (is.null(weights)) {
     weights <- inverse_probability_weighting(identifier = identifier, covariates = covariates,
                                              treatment = treatment, baseline = baseline,
-                                             total_follow_up = total_followup, numerator = numerator,
+                                             total_followup = total_followup, numerator = numerator,
                                              include_censor = include_censor, censor = censor,obsdata = obsdata)[[1]][, total_followup]
 
     obsdata$weights <- ifelse(quantile(weights, treshold, na.rm = TRUE)> weights, quantile(weights, treshold, na.rm = TRUE), weights)

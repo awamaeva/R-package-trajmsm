@@ -14,33 +14,35 @@
 #' @param ref the reference group.
 #' @export trajmsm_pltmle
 #' @examples
-#' Obsdata_long = gendata(n = 2000, format = "long", total_followup = 3, seed = 945)
+#' obsdata_long = gendata(n = 2000, format = "long", total_followup = 6, seed = 945)
+#' years <- 2011:2016
 #' baseline_var <- c("age","sex")
-#' covariates <- list(c("hyper2011", "bmi2011"),c("hyper2012", "bmi2012"),c("hyper2013", "bmi2013"))
-#' treatment_var <- c("statins2011","statins2012","statins2013")
-#' time = "Time"
-#' time_values <- c(2011,2012,2013)
-#' formulaA = as.formula(cbind(statins, 1 - statins) ~ time)
-#' restraj = build_traj(obsdata = Obsdata_long, number_traj = 3, formula = formulaA, identifier = "id")
+#' variables <- c("hyper", "bmi")
+#' covariates <- lapply(years, function(year) {
+#' paste0(variables, year)})
+#' treatment_var <- paste0("statins", 2011:2016)
+#' formula_treatment = as.formula(cbind(statins, 1 - statins) ~ time)
+#' restraj = build_traj(obsdata = obsdata_long, number_traj = 3, formula = formula_treatment, identifier = "id")
 #' datapost = restraj$data_post
-#' trajmsm_long <- merge(Obsdata_long, datapost, by = "id")
+#' trajmsm_long <- merge(obsdata_long, datapost, by = "id")
 #'     AggFormula <- as.formula(paste("statins", "~", "time", "+", "class"))
 #'     AggTrajData <- aggregate(AggFormula, data = trajmsm_long, FUN = mean)
 #'     AggTrajData
 #' trajmsm_wide = reshape(data = trajmsm_long, direction = "wide", idvar = "id",
 #' v.names = c("statins","bmi","hyper"), timevar = "time", sep ="")
-#' formulaY =  as.formula(" y ~ statins2011 + statins2012 + statins2013 + hyper2011 + bmi2011 + hyper2012 + bmi2012 +
-#'                                     hyper2013 + bmi2013 + age + sex ")
-#'trajmsm_pltmle(formula = formulaY, identifier = identifier, baseline = baseline,
-#'               covariates = covariates, treatment = treatment, outcome = "y",
-#'              time = "time", time_values = time_values, number_traj = 3, total_followup = 3,
+#'formula = paste0("y ~", paste0(treatment_var,collapse = "+"), "+",
+#'                 paste0(unlist(covariates), collapse = "+"),"+",
+#'                 paste0(baseline_var, collapse = "+"))
+#'trajmsm_pltmle(formula = formula, identifier = "id", baseline = baseline_var,
+#'               covariates = covariates, treatment = treatment_var, outcome = "y",
+#'              time = "time", number_traj = 3, total_followup = 6,
 #'              trajmodel = restraj$traj_model, ref = "3", obsdata = trajmsm_wide, treshold = 0.99)
 #' @return \item{results_msm_pooledltmle}{Estimates of a LCGA-MSM with pooled LTMLE.}
 #' @author Awa Diop, Denis Talbot
 
 
 trajmsm_pltmle <- function(formula = formula,identifier,baseline,covariates,treatment,outcome,
-                                 number_traj,total_followup, time,time_values,trajmodel,ref,obsdata,treshold=0.999){
+                                 number_traj,total_followup, time,trajmodel,ref,obsdata,treshold=0.999){
 
  stopifnot(!is.null(identifier));
  stopifnot(!is.null(baseline));
@@ -51,30 +53,33 @@ trajmsm_pltmle <- function(formula = formula,identifier,baseline,covariates,trea
  stopifnot(!is.null(obsdata));
  stopifnot(!is.null(trajmodel));
  stopifnot(!is.null(time));
- stopifnot(!is.null(time_values));
   stopifnot(!is.null(treshold));
      nregimes = 2^total_followup;  #number of treatment regimes
 
      treatment_names <- sub("\\d+", "", treatment)
      treatment_name <- unique(treatment_names)[1]
      class = factor(predict_traj(identifier = identifier, total_followup = total_followup,
-                                 treatment = treatment_name, time = time, time_values = time_values,
+                                 treatment = treatment_name, time = time,
                                  trajmodel = trajmodel)$post_class);
+     if(length(unique(class)) < number_traj){
+       stop(paste("Number of predicted trajectory groups inferior to", number_traj))
+     }
 
+     if(length(unique(class)) == number_traj){
      traj_indic=t(sapply(1:nregimes,function(x)sapply(1:number_traj,function(i) ifelse(class[x]==i,1,0))))
      traj_indic[,1]=1 #Intercept
     #Create the obsdata under all the different regime of treatment
      res_pltmle = pltmle(formula = formula, outcome = outcome,treatment = treatment,
                  covariates = covariates, baseline = baseline, ntimes_interval = total_followup, number_traj = number_traj,
-                 time =  time, time_values = time_values,identifier = identifier,obsdata = obsdata,traj=traj_indic, treshold = treshold);
+                 time =  time, identifier = identifier,obsdata = obsdata,traj=traj_indic, treshold = treshold);
 
     obsdata_pool= data.frame(Y=res_pltmle$counter_means);
-    D=res$D; #Influence functions
+    D=res_pltmle$D; #Influence functions
 
     # Estimation
-    obsdata_pool$TMLE_group = class
-    obsdata_pool$TMLE_group <- relevel(as.factor(obsdata_pool$TMLE_group), ref = ref)
-    mod = glm(Y~TMLE_group, family = quasibinomial, data = obsdata_pool);
+    obsdata_pool$ptmle_group = class
+    obsdata_pool$ptmle_group <- relevel(as.factor(obsdata_pool$ptmle_group), ref = ref)
+    mod = glm(Y ~ ptmle_group, family = quasibinomial, data = obsdata_pool);
     coefs = summary(mod)$coefficients[,1];
     X = model.matrix(mod)[1:nregimes,]
     B = matrix(coefs, nrow = number_traj);
@@ -97,3 +102,4 @@ trajmsm_pltmle <- function(formula = formula,identifier,baseline,covariates,trea
     return(results_msm_pltmle)
   }
 
+}
