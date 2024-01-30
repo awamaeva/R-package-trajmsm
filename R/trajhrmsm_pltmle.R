@@ -17,11 +17,20 @@
 #' @param obsdata data in a long format.
 #' @param time name of the time variable.
 #' @param time_values measuring times.
-#' @noRd
-#' @return \item{results_hrmsm_pltmle}{Results from the LCGA-HRMSM with pooled ltmle}
+#' @importFrom stats na.omit rbinom plogis qlogis  reshape glm
+#' binomial coef as.formula ave aggregate relevel pnorm sd quantile model.matrix
+#' @export
+#' @return A list containing the following components:
+#'   \itemize{
+#'   \item{results_hrmsm_pltmle}{Estimates of LCGA-HRMSM.}
+#'   \item{result_coef_boot}{Estimates obtained with bootstrap.}
+#'   \item{restraj}{Fitted trajectory model.}
+#'   \item{mean_adh}{Mean adherence per trajectory group.}
+#'   }
 #' @author Awa Diop Denis Talbot
 #' @examples
-#' obsdata_long = gendata(n = 1000, format = "long", total_followup = 8, timedep_outcome = TRUE,  seed = 945)
+#' obsdata_long = gendata(n = 1000, format = "long",
+#' total_followup = 8, timedep_outcome = TRUE,  seed = 945)
 #' baseline_var <- c("age","sex")
 #' years <- 2011:2018
 #' variables <- c("hyper", "bmi")
@@ -29,9 +38,11 @@
 #'   paste0(variables, year)})
 #' treatment_var <- paste0("statins", 2011:2018)
 #' var_cov <- c("statins","hyper", "bmi","y")
-#' respltmle = trajhrmsm_pltmle(degree_traj = "linear", treatment = treatment_var,covariates = covariates, baseline = baseline_var,
-#'                             outcome = paste0("y", 2016:2018),var_cov = var_cov, ntimes_interval = 6, total_followup = 8, time = "time",time_values = years, identifier = "id",
-#'                              number_traj = 3, family = "poisson", obsdata = obsdata_long)
+#' respltmle = trajhrmsm_pltmle(degree_traj = "linear", treatment = treatment_var,
+#' covariates = covariates, baseline = baseline_var,
+#' outcome = paste0("y", 2016:2018),var_cov = var_cov, ntimes_interval = 6,
+#' total_followup = 8, time = "time",time_values = years, identifier = "id",
+#' number_traj = 3, family = "poisson", obsdata = obsdata_long)
 #' respltmle$results_hrmsm_pltmle
 
 

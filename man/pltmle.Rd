@@ -28,11 +28,15 @@ pltmle(
 
 \item{covariates}{covariates.}
 
+\item{baseline}{name of baseline covariates.}
+
 \item{ntimes_interval}{length of a time-interval (s).}
 
 \item{number_traj}{an integer to choose the number of trajectory groups.}
 
 \item{time}{name of the time variable.}
+
+\item{time_values}{measuring times.}
 
 \item{identifier}{name of the column for unique identifiant.}
 
@@ -63,7 +67,7 @@ trajmsm_long <- merge(obsdata_long, datapost, by = "id")
     AggTrajData <- aggregate(AggFormula, data = trajmsm_long, FUN = mean)
     AggTrajData
 trajmsm_long[ , "traj_group"] <- trajmsm_long[ , "class"]
-trajmsm_wide = reshape(trajmsm_long, direction = "wide", idvar = "id",
+obsdata= reshape(trajmsm_long, direction = "wide", idvar = "id",
 v.names = c("statins","bmi","hyper"), timevar = "time", sep ="")
 formula =  as.formula(" y ~ statins2011 + statins2012 + statins2013 +
 hyper2011 + bmi2011 + hyper2012 + bmi2012 +
@@ -75,7 +79,7 @@ traj=t(sapply(1:8,function(x)sapply(1:3,function(i)ifelse(class[x]==i,1,0))))
 traj[,1]=1
 res_pltmle = pltmle(formula = formula, outcome = "y",treatment = treatment_var,
 covariates = covariates, baseline = baseline_var, ntimes_interval = 3, number_traj = 3,
- time =  "time",time_values = time_values,identifier = "id",obsdata = trajmsm_wide,
+ time =  "time",time_values = time_values,identifier = "id",obsdata = obsdata,
 traj=traj, treshold = 0.99)
 res_pltmle$counter_means
 }

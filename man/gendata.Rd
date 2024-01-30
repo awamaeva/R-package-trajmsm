@@ -21,6 +21,10 @@ gendata(
 
 \item{format}{Character, either "long" or "wide" for the format of the output data frame.}
 
+\item{start_year}{baseline year.}
+
+\item{total_followup}{Number of measuring times.}
+
 \item{timedep_outcome}{Logical, if TRUE, includes a time-dependent outcome.}
 
 \item{seed, }{use a specific seed value to ensure the simulated data is replicable.}

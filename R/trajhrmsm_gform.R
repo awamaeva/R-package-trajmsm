@@ -18,7 +18,15 @@
 #' @param obsdata data in a long format.
 #' @param time name of the time variable.
 #' @param time_values measuring times.
-#' @return \item{trajhrmsm_gform }{trajhrmsm_gform lcga}
+#' @return A list containing the following components:
+#'   \itemize{
+#'   \item{results_hrmsm_gform}{Estimates of LCGA-HRMSM.}
+#'   \item{result_coef_boot}{Estimates obtained with bootstrap.}
+#'   \item{restraj}{Fitted trajectory model.}
+#'   \item{mean_adh}{Mean adherence per trajectory group.}
+#'   }
+#' @importFrom stats na.omit rbinom plogis qlogis  reshape glm
+#' binomial coef as.formula ave aggregate relevel pnorm sd quantile model.matrix
 #' @export
 #' @author Awa Diop Denis Talbot
 #' @examples
@@ -191,7 +199,7 @@ trajhrmsm_gform <- function(degree_traj = c("linear","quadratic","cubic"),
   results = cbind(coefs ,se,pvalue, lo.ci, up.ci);
   colnames(results) =  c("Estimate", "Std.Error", "Pvalue", "Lower CI", "Upper CI");
   results_hrmsm_gform = results
-  return(list(  results_hrmsm_gform = results_hrmsm_gform, result_coef_boot = result_coef_boot, restraj = restraj, mean_adh = mean_adh));
+  return(list(results_hrmsm_gform = results_hrmsm_gform, result_coef_boot = result_coef_boot, restraj = restraj, mean_adh = mean_adh));
   }
 
 }

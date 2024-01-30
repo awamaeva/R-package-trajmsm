@@ -51,7 +51,7 @@ trajmsm_gform(
 \item{obsdata}{observed data in wide format.}
 }
 \value{
-\item{results_msm_gform}{Estimates of a LCGA-MSM with g-formula.}
+Provides estimates of LCGA-MSM obtained using g-formula.
 }
 \description{
 function to estimate parameters of a MSM-LCGA using g-formula
@@ -74,7 +74,7 @@ trajmsm_long <- merge(obsdata_long, datapost, by = "id")
     AggFormula <- as.formula(paste("statins", "~", "time", "+", "class"))
     AggTrajData <- aggregate(AggFormula, data = trajmsm_long, FUN = mean)
     AggTrajData
-trajmsm_wide = reshape(data = trajmsm_long, direction = "wide", idvar = "id",
+obsdata = reshape(data = trajmsm_long, direction = "wide", idvar = "id",
 v.names = c("statins","bmi","hyper"), timevar = "time", sep ="")
 formula = paste0("y ~", paste0(treatment_var,collapse = "+"), "+",
                 paste0(unlist(covariates), collapse = "+"),"+",
@@ -82,7 +82,7 @@ formula = paste0("y ~", paste0(treatment_var,collapse = "+"), "+",
 resmsm_gform <- trajmsm_gform(formula = formula, identifier = "id",rep = 5,
 baseline = baseline_var, covariates = covariates, var_cov = var_cov,
 treatment = treatment_var, outcome = "y", total_followup = 6,time = "time",
-time_values = years, trajmodel = restraj$traj_model,ref = "1", obsdata =  trajmsm_wide )
+time_values = years, trajmodel = restraj$traj_model,ref = "1", obsdata =   obsdata )
 resmsm_gform
 }
 \author{

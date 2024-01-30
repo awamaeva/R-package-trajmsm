@@ -16,12 +16,22 @@
 #' @param weights a vector of estimated weights. If NULL, the weights are computed by the function.
 #' @param time_values values of the time variable.
 #' @param obsdata data in a long format.
+#' @return A list containing the following components:
+#'   \itemize{
+#'   \item{results_hrmsm_ipw}{Estimates of LCGA-HRMSM.}
+#'   \item{result_coef_boot}{Estimates obtained with bootstrap.}
+#'   \item{restraj}{Fitted trajectory model.}
+#'   \item{mean_adh}{Mean adherence per trajectory group.}
+#'   }
 #' @author Awa Diop, Denis Talbot
+#' @importFrom stats na.omit rbinom plogis qlogis  reshape glm
+#' binomial coef as.formula ave aggregate relevel pnorm sd quantile model.matrix
 #' @export trajhrmsm_ipw
 #' @import sandwich
 #' @import flexmix
 #' @examples
-#' obsdata_long = gendata(n = 1000, format = "long", total_followup = 8, timedep_outcome = TRUE,  seed = 945)
+#' obsdata_long = gendata(n = 1000, format = "long", total_followup = 8,
+#' timedep_outcome = TRUE,  seed = 945)
 #' baseline_var <- c("age","sex")
 #' years <- 2011:2018
 #' variables <- c("hyper", "bmi")
@@ -30,8 +40,10 @@
 #' treatment_var <- paste0("statins", 2011:2018)
 #' var_cov <- c("statins","hyper", "bmi","y")
 #' reshrmsm_ipw <- trajhrmsm_ipw(degree_traj = "linear", numerator = "stabilized",
-#' identifier = "id", baseline = baseline_var, covariates = covariates, treatment = treatment_var,
-#' outcome = "y", var_cov= var_cov,include_censor = FALSE, ntimes_interval = 6,total_followup = 8, time = "time", time_values = 2011:2018,
+#' identifier = "id", baseline = baseline_var,
+#' covariates = covariates, treatment = treatment_var,
+#' outcome = "y", var_cov= var_cov,include_censor = FALSE,
+#'  ntimes_interval = 6,total_followup = 8, time = "time", time_values = 2011:2018,
 #' family = "poisson", number_traj = 3, obsdata = obsdata_long, treshold = 0.999)
 #' reshrmsm_ipw$res_trajhrmsm_ipw
 
@@ -49,7 +61,7 @@ trajhrmsm_ipw <- function(degree_traj = c("linear","quadratic","cubic"),
     # Compute the weights for all different regimes of treatment
     Weights = inverse_probability_weighting(identifier = identifier, covariates = covariates,
                                             treatment = treatment, baseline = baseline,
-                                            total_followup = total_followup, numerator = numerator,
+                                            numerator = numerator,
                                             include_censor = include_censor, censor = censor,obsdata = obsdata_wide)[[1]];
 
       weights_trunc <- sapply(1:total_followup, function(x){

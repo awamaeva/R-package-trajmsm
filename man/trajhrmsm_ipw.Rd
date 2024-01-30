@@ -2,7 +2,7 @@
 % Please edit documentation in R/trajhrmsm_ipw.R
 \name{trajhrmsm_ipw}
 \alias{trajhrmsm_ipw}
-\title{Marginal Structural Model and Latent Class of Growth Analysis estimated with IPW}
+\title{History Restricted MSM and Latent Class of Growth Analysis estimated with IPW.}
 \usage{
 trajhrmsm_ipw(
   degree_traj = c("linear", "quadratic", "cubic"),
@@ -57,11 +57,21 @@ trajhrmsm_ipw(
 
 \item{formula}{specification of the model for the outcome to be fitted for a binomial or gaussian distribution.}
 }
+\value{
+A list containing the following components:
+  \itemize{
+  \item{results_hrmsm_ipw}{Estimates of LCGA-HRMSM.}
+  \item{result_coef_boot}{Estimates obtained with bootstrap.}
+  \item{restraj}{Fitted trajectory model.}
+  \item{mean_adh}{Mean adherence per trajectory group.}
+  }
+}
 \description{
-Combine Marginal Structural Model and Latent Class of Growth Analysis
+Estimate parameters of LCGA-HRMSM Using a Pooled LTMLE.
 }
 \examples{
-obsdata_long = gendata(n = 1000, format = "long", total_followup = 8, timedep_outcome = TRUE,  seed = 945)
+obsdata_long = gendata(n = 1000, format = "long", total_followup = 8,
+timedep_outcome = TRUE,  seed = 945)
 baseline_var <- c("age","sex")
 years <- 2011:2018
 variables <- c("hyper", "bmi")
@@ -70,8 +80,10 @@ paste0(variables, year)})
 treatment_var <- paste0("statins", 2011:2018)
 var_cov <- c("statins","hyper", "bmi","y")
 reshrmsm_ipw <- trajhrmsm_ipw(degree_traj = "linear", numerator = "stabilized",
-identifier = "id", baseline = baseline_var, covariates = covariates, treatment = treatment_var,
-outcome = "y", var_cov= var_cov,include_censor = FALSE, ntimes_interval = 6,total_followup = 8, time = "time", time_values = 2011:2018,
+identifier = "id", baseline = baseline_var,
+covariates = covariates, treatment = treatment_var,
+outcome = "y", var_cov= var_cov,include_censor = FALSE,
+ ntimes_interval = 6,total_followup = 8, time = "time", time_values = 2011:2018,
 family = "poisson", number_traj = 3, obsdata = obsdata_long, treshold = 0.999)
 reshrmsm_ipw$res_trajhrmsm_ipw
 }

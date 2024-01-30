@@ -6,20 +6,31 @@
 #' @param covariates Time-varying covariates.
 #' @param baseline Baseline covariates.
 #' @param censor Name of the censoring variable.
-#' @param total_follow_up Total length of follow-up.
 #' @param obsdata Observed data in wide format.
 #' @return Unstabilized Inverse Probability of Censoring Weights
+#' @keywords internal
 #' @noRd
 #' @export
 #' @author Awa Diop, Denis Talbot
 #' @note This function requires data in a wide format.
+#' @examples
+#' obsdata = gendata(n = 1000, format = "wide",include_censor = TRUE,seed = 945)
+#' baseline_var <- c("age","sex")
+#' covariates <- list(c("hyper2011", "bmi2011"),
+#' c("hyper2012", "bmi2012"),c("hyper2013", "bmi2013"))
+#' treatment_var <- c("statins2011","statins2012","statins2013")
+#' censor_var <- c("censor2011", "censor2012","censor2013")
+#' unstabilized_weights = unstabilized_ipcw(
+#' identifier = "id", covariates = covariates, treatment = treatment_var,
+#' baseline = baseline_var, censor = censor_var,obsdata = obsdata)
+#' summary(unstabilized_weights[[1]])
 
-unstabilized_ipcw <- function(identifier, treatment, covariates, baseline, censor, total_follow_up, obsdata) {
+unstabilized_ipcw <- function(identifier, treatment, covariates, baseline, censor, obsdata) {
   if (!is.data.frame(obsdata)) {
     stop("obsdata must be a data frame in wide format")
   }
 
-  required_args <- c("identifier", "baseline", "covariates", "treatment", "censor", "total_follow_up", "obsdata")
+  required_args <- c("identifier", "baseline", "covariates", "treatment", "censor", "obsdata")
   missing_args <- setdiff(required_args, names(match.call()))
   if (length(missing_args) > 0) {
     stop(paste(missing_args, collapse = ", "), " not specified")

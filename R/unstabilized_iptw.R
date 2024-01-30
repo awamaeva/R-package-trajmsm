@@ -5,22 +5,32 @@
 #' @param treatment Treatment.
 #' @param covariates List of time-varying covariates.
 #' @param baseline Baseline covariates.
-#' @param total_follow_up Total length of follow-up.
 #' @param obsdata Observed data in wide format.
 #' @return Unstabilized inverse of treatment probabilities
+#' @keywords internal
 #' @noRd
 #' @export
 #' @author Awa Diop, Denis Talbot
 #' @note This function requires data in a wide format.
+#' @examples
+#' obsdata = gendata(n = 1000, format = "wide",total_followup =3, seed = 945)
+#' baseline_var <- c("age","sex")
+#' covariates <- list(c("hyper2011", "bmi2011"),
+#' c("hyper2012", "bmi2012"),c("hyper2013", "bmi2013"))
+#' treatment_var <- c("statins2011","statins2012","statins2013")
+#' unstabilized_weights = stabilized_iptw(
+#' identifier = "id", covariates = covariates, treatment = treatment_var,
+#' baseline = baseline_var,obsdata = obsdata)
+#' summary(unstabilized_weights[[1]])
 
-unstabilized_iptw <- function(identifier, treatment, covariates, baseline, total_followup, obsdata) {
+unstabilized_iptw <- function(identifier, treatment, covariates, baseline, obsdata) {
   # Check if observed data is in the correct format
   if (!is.data.frame(obsdata)) {
     stop("obsdatamust be a data frame in wide format")
   }
 
   # Validate the presence of required arguments
-  required_args <- c("identifier", "treatment", "covariates", "baseline", "total_followup", "obsdata")
+  required_args <- c("identifier", "treatment", "covariates", "baseline", "obsdata")
   missing_args <- setdiff(required_args, names(match.call()))
   if (length(missing_args) > 0) {
     stop(paste(missing_args, collapse = ", "), " not specified")

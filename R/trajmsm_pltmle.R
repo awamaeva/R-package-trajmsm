@@ -4,14 +4,19 @@
 #' @name trajmsm_pltmle
 #' @param formula specification of the model for the outcome to be fitted.
 #' @param identifier  name of the column for unique identifiant.
+#' @param baseline name of baseline covariates.
 #' @param covariates covariates.
 #' @param treatment time-varying treatment.
 #' @param time name of the time variable.
+#' @param time_values measuring times.
 #' @param total_followup number of measuring times per interval.
 #' @param number_traj an integer to choose the number of trajectory groups.
 #' @param trajmodel trajectory model built with the observed treatment.
 #' @param obsdata observed data in wide format.
 #' @param ref the reference group.
+#' @importFrom stats na.omit rbinom plogis qlogis  reshape glm
+#' binomial coef as.formula ave aggregate relevel pnorm sd quantile model.matrix
+#' @return Provides estimates of LCGA-MSM obtained using pooled ltlmle.
 #' @export trajmsm_pltmle
 #' @examples
 #' obsdata_long = gendata(n = 1000, format = "long", total_followup = 6, seed = 945)

@@ -10,6 +10,7 @@ Description: Implements marginal structural models combined with latent class gr
 License: GPL (>= 3)
 Encoding: UTF-8
 Imports: 
+    stats,
     class,
     e1071,
     flexmix,

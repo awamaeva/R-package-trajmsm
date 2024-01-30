@@ -10,7 +10,6 @@ inverse_probability_weighting(
   baseline,
   covariates,
   treatment,
-  total_followup,
   include_censor = FALSE,
   censor,
   obsdata
@@ -26,8 +25,6 @@ inverse_probability_weighting(
 \item{covariates}{Name of the time-varying covariates.}
 
 \item{treatment}{Name of the time-varying treatment.}
-
-\item{total_followup}{Total length of follow-up.}
 
 \item{include_censor}{Logical value TRUE/FALSE to include or not a censoring variable.}
 
@@ -49,7 +46,7 @@ c("hyper2012", "bmi2012"),c("hyper2013", "bmi2013"))
 treatment_var <- c("statins2011","statins2012","statins2013")
 stabilized_weights = inverse_probability_weighting(numerator = "stabilized",
 identifier = "id", covariates = covariates, treatment = treatment_var,
-baseline = baseline_var, total_followup = 3,obsdata = obsdata)
+baseline = baseline_var, obsdata = obsdata)
 }
 \author{
 Awa Diop, Denis Talbot

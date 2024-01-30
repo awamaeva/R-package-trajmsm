@@ -3,13 +3,18 @@
 #' @param include_censor Logical, if TRUE, includes censoring.
 #' @param format Character, either "long" or "wide" for the format of the output data frame.
 #' @param timedep_outcome Logical, if TRUE, includes a time-dependent outcome.
+#' @param start_year baseline year.
+#' @param total_followup Number of measuring times.
 #' @param seed, use a specific seed value to ensure the simulated data is replicable.
+#' @importFrom stats na.omit rbinom plogis qlogis  reshape glm
+#' binomial coef as.formula
 #' @export gendata
 #' @return A data frame with generated trajectories.
 #' @examples
 #' gendata(n = 100, include_censor = FALSE, format = "wide",total_followup = 3, seed = 945)
 
-gendata<- function(n, include_censor = FALSE, format = c("long", "wide"),start_year = 2011, total_followup, timedep_outcome = FALSE, seed) {
+gendata<- function(n, include_censor = FALSE, format = c("long", "wide"),
+                   start_year = 2011, total_followup, timedep_outcome = FALSE, seed) {
   set.seed(seed)
 
   # Common variables for all scenarios
@@ -33,16 +38,6 @@ gendata<- function(n, include_censor = FALSE, format = c("long", "wide"),start_y
     }
   }
 
-  # Apply censoring
-  if (include_censor) {
-    for (i in 2:total_followup) {
-      statins[, i][censor[, i-1] == 1] <- NA
-      hyper[, i][censor[, i-1] == 1] <- NA
-      bmi[, i][censor[, i-1] == 1] <- NA
-      censor[, i][censor[, i-1] == 1] <- 1
-    }
-  }
-
   if(timedep_outcome == FALSE){
   y <- rbinom(n, 1, plogis(-2.5 + rowSums(sapply(1:total_followup, function(i)
  -0.5* statins[, i] + 0.25 * hyper[, i] + 0.25* bmi[, i]))))
@@ -55,6 +50,16 @@ gendata<- function(n, include_censor = FALSE, format = c("long", "wide"),start_y
 
   colnames(obsdata)[5:ncol(obsdata)] <- coln
 
+  # Apply censoring
+  if (include_censor) {
+    for (i in 2:total_followup) {
+      statins[, i][censor[, i-1] == 1] <- NA
+      hyper[, i][censor[, i-1] == 1] <- NA
+      bmi[, i][censor[, i-1] == 1] <- NA
+      censor[, i][censor[, i-1] == 1] <- 1
+    }
+  }
+
 
   if (format == "long") {
 
@@ -66,6 +71,8 @@ gendata<- function(n, include_censor = FALSE, format = c("long", "wide"),start_y
                             v.names = "bmi", direction = "long")
     obsdata = data.frame(id = statins_long$id, time = statins_long$time, statins = statins_long$statins, hyper = hyper_long$hyper, bmi = bmi_long$bmi,age = age, sex=sex, y = y)
   }
+
+
     if (include_censor && format == "long"){
       obsdata = obsdata_long
       obsdata$censor <- as.vector(censor)
@@ -78,15 +85,27 @@ gendata<- function(n, include_censor = FALSE, format = c("long", "wide"),start_y
     obsdata <- cbind(obsdata, censor)
   }
 
+
 }
 
   if(timedep_outcome == TRUE){
+
     y <- matrix(NA, nrow = n, ncol = total_followup)
     y[, 1] <- rbinom(n, 1, plogis(-2.5 -0.5 * statins[, 1] + 0.25* hyper[, 1] + 0.25 * bmi[, 1]))
 
     for (i in 2:total_followup) {
     y[,i] <- rbinom(n, 1, plogis(-2.5 -0.5 * statins[, i] + 0.25* hyper[, i] + 0.25 * bmi[, i]))
     y[,i][y[, i-1] == 1] <- 1
+    }
+
+    # Apply censoring
+    if (include_censor) {
+      for (i in 2:total_followup) {
+        statins[, i][censor[, i-1] == 1] <- NA
+        hyper[, i][censor[, i-1] == 1] <- NA
+        bmi[, i][censor[, i-1] == 1] <- NA
+        censor[, i][censor[, i-1] == 1] <- 1
+      }
     }
 
     obsdata <- data.frame(id = id, age = age, sex = sex,statins = statins, hyper = hyper, bmi = bmi,y = y)
@@ -107,6 +126,7 @@ gendata<- function(n, include_censor = FALSE, format = c("long", "wide"),start_y
                           hyper = hyper_long$hyper, bmi = bmi_long$bmi,age = age, sex=sex, y = y_long$y)
 
     }
+
 
       if (include_censor  && format == "long") {
         obsdata = obsdata_long

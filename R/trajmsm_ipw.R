@@ -8,17 +8,19 @@
 #' @param treatment Time-varying treatment.
 #' @param baseline Baseline covariates.
 #' @param covariates Time-varying covariates.
-#' @param total_followup Number of measuring times.
 #' @param number_traj An integer to fix the number of trajectory groups.
 #' @param obsdata Dataset to be used in the analysis.
 #' @param numerator Type of weighting ("stabilized" or "unstabilized").
 #' @param weights A vector of estimated weights. If NULL, the weights are computed by the function \code{IPW}.
 #' @param treshold For weight truncation.
-#' @return Stabilized and unstabilized inverse of probabilities
+#' @return Provides estimates of LCGA-MSM obtained using the ipw function.
 #' @export trajmsm_ipw
 #' @import sandwich
 #' @importFrom survival coxph
 #' @import flexmix
+#' @importFrom stats na.omit rbinom plogis qlogis  reshape glm
+#' binomial coef as.formula ave aggregate relevel pnorm sd quantile model.matrix
+#' @return Provides estimates of LCGA-MSM obtained using IPW.
 #' @examples
 #' obsdata_long = gendata(n = 1000, format = "long", total_followup = 6, seed = 945)
 #' years <- 2011:2016
@@ -44,21 +46,21 @@
 #'
 #'resmsm_ipw = trajmsm_ipw(formula1 = as.formula("y ~ ipw_group"),
 #'            identifier = "id", baseline = baseline_var, covariates = covariates,
-#'            treatment = treatment_var, number_traj=3,total_followup = 6, family = "binomial",
+#'            treatment = treatment_var, number_traj=3, family = "binomial",
 #'            obsdata = obsdata,numerator = "stabilized", include_censor = FALSE)
 #'resmsm_ipw
 
 
 trajmsm_ipw <- function(formula1, formula2, family, identifier, treatment, covariates,
-                         baseline, total_followup, number_traj, obsdata,
+                         baseline, number_traj, obsdata,
                          numerator = "stabilized",include_censor, censor, weights = NULL, treshold = 0.99) {
 
   # Compute weights if not provided
   if (is.null(weights)) {
     weights <- inverse_probability_weighting(identifier = identifier, covariates = covariates,
                                              treatment = treatment, baseline = baseline,
-                                             total_followup = total_followup, numerator = numerator,
-                                             include_censor = include_censor, censor = censor,obsdata = obsdata)[[1]][, total_followup]
+                                              numerator = numerator,
+                                             include_censor = include_censor, censor = censor,obsdata = obsdata)[[1]][, length(treatment)]
 
     obsdata$weights <- ifelse(quantile(weights, treshold, na.rm = TRUE)> weights, quantile(weights, treshold, na.rm = TRUE), weights)
   } else {

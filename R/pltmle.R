@@ -3,9 +3,11 @@
 #' @name pltmle
 #' @param formula specification of the model for the outcome to be fitted.
 #' @param identifier  name of the column for unique identifiant.
+#' @param baseline name of baseline covariates.
 #' @param covariates covariates.
 #' @param treatment time-varying treatment.
 #' @param time name of the time variable.
+#' @param time_values measuring times.
 #' @param total_followup number of measuring times per interval.
 #' @param ntimes_interval length of a time-interval (s).
 #' @param number_traj an integer to choose the number of trajectory groups.
@@ -30,7 +32,7 @@
 #'     AggTrajData <- aggregate(AggFormula, data = trajmsm_long, FUN = mean)
 #'     AggTrajData
 #' trajmsm_long[ , "traj_group"] <- trajmsm_long[ , "class"]
-#' trajmsm_wide = reshape(trajmsm_long, direction = "wide", idvar = "id",
+#' obsdata= reshape(trajmsm_long, direction = "wide", idvar = "id",
 #' v.names = c("statins","bmi","hyper"), timevar = "time", sep ="")
 #' formula =  as.formula(" y ~ statins2011 + statins2012 + statins2013 +
 #' hyper2011 + bmi2011 + hyper2012 + bmi2012 +
@@ -42,7 +44,7 @@
 #' traj[,1]=1
 #' res_pltmle = pltmle(formula = formula, outcome = "y",treatment = treatment_var,
 #' covariates = covariates, baseline = baseline_var, ntimes_interval = 3, number_traj = 3,
-#'  time =  "time",time_values = time_values,identifier = "id",obsdata = trajmsm_wide,
+#'  time =  "time",time_values = time_values,identifier = "id",obsdata = obsdata,
 #' traj=traj, treshold = 0.99)
 #' res_pltmle$counter_means
 #' @author Awa Diop, Denis Talbot
@@ -87,8 +89,8 @@ pltmle <- function(formula, outcome, treatment, covariates, baseline, ntimes_int
   # Compute the weights for all different regimes of treatment
   Weights = inverse_probability_weighting(identifier = identifier, covariates = covariates,
                                           treatment = treatment, baseline = baseline,
-                                          total_followup = total_followup, numerator = "unstabilized",
-                                          include_censor = FALSE, censor = censor,obsdata = obsdata)[[1]];
+                                          numerator = "unstabilized",
+                                          include_censor = FALSE, obsdata = obsdata)[[1]];
 
   weights_trunc <- sapply(1:ntimes_interval, function(x){
   weights <- ifelse(quantile(Weights[, x], treshold, na.rm = TRUE)> Weights[, x], quantile(Weights[, x], treshold, na.rm = TRUE), Weights[, x])

@@ -12,7 +12,6 @@ trajmsm_ipw(
   treatment,
   covariates,
   baseline,
-  total_followup,
   number_traj,
   obsdata,
   numerator = "stabilized",
@@ -37,8 +36,6 @@ trajmsm_ipw(
 
 \item{baseline}{Baseline covariates.}
 
-\item{total_followup}{Number of measuring times.}
-
 \item{number_traj}{An integer to fix the number of trajectory groups.}
 
 \item{obsdata}{Dataset to be used in the analysis.}
@@ -50,7 +47,9 @@ trajmsm_ipw(
 \item{treshold}{For weight truncation.}
 }
 \value{
-Stabilized and unstabilized inverse of probabilities
+Provides estimates of LCGA-MSM obtained using the ipw function.
+
+Provides estimates of LCGA-MSM obtained using IPW.
 }
 \description{
 Combine Marginal Structural Model and Latent Class of Growth Analysis
@@ -71,15 +70,16 @@ trajmsm_long <- merge(obsdata_long, datapost, by = "id")
     AggFormula <- as.formula(paste("statins", "~", "time", "+", "class"))
     AggTrajData <- aggregate(AggFormula, data = trajmsm_long, FUN = mean)
     AggTrajData
-trajmsm_long$ipw_groups <- relevel(trajmsm_long$class, ref = "2")
-trajmsm_wide = reshape(data = trajmsm_long, direction = "wide", idvar = "id",
+trajmsm_long$ipw_group <- relevel(trajmsm_long$class, ref = "1")
+obsdata = reshape(data = trajmsm_long, direction = "wide", idvar = "id",
 v.names = c("statins","bmi","hyper"), timevar = "time", sep ="")
 formula = paste0("y ~", paste0(treatment_var,collapse = "+"), "+",
                 paste0(unlist(covariates), collapse = "+"),"+",
                 paste0(baseline_var, collapse = "+"))
-obsdata = trajmsm_wide
-trajmsm_ipw(formula1 = as.formula("y ~ class"),
+
+resmsm_ipw = trajmsm_ipw(formula1 = as.formula("y ~ ipw_group"),
            identifier = "id", baseline = baseline_var, covariates = covariates,
-           treatment = treatment_var, number_traj=3,total_followup = 6, family = "binomial",
+           treatment = treatment_var, number_traj=3, family = "binomial",
            obsdata = obsdata,numerator = "stabilized", include_censor = FALSE)
+resmsm_ipw
 }

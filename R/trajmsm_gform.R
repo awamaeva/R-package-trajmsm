@@ -16,7 +16,7 @@
 #' @param var_cov names of the time-varying covariates in a long format.
 #' @param ref the reference trajectory group.
 #' @param obsdata observed data in wide format.
-#' @return \item{results_msm_gform}{Estimates of a LCGA-MSM with g-formula.}
+#' @return Provides estimates of LCGA-MSM obtained using g-formula.
 #' @export
 #' @examples
 #' obsdata_long = gendata(n = 1000, format = "long", total_followup = 6, seed = 945)

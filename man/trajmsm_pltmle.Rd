@@ -26,6 +26,8 @@ trajmsm_pltmle(
 
 \item{identifier}{name of the column for unique identifiant.}
 
+\item{baseline}{name of baseline covariates.}
+
 \item{covariates}{covariates.}
 
 \item{treatment}{time-varying treatment.}
@@ -36,6 +38,8 @@ trajmsm_pltmle(
 
 \item{time}{name of the time variable.}
 
+\item{time_values}{measuring times.}
+
 \item{trajmodel}{trajectory model built with the observed treatment.}
 
 \item{ref}{the reference group.}
@@ -43,6 +47,8 @@ trajmsm_pltmle(
 \item{obsdata}{observed data in wide format.}
 }
 \value{
+Provides estimates of LCGA-MSM obtained using pooled ltlmle.
+
 \item{results_msm_pooledltmle}{Estimates of a LCGA-MSM with pooled LTMLE.}
 }
 \description{
@@ -70,10 +76,11 @@ v.names = c("statins","bmi","hyper"), timevar = "time", sep ="")
 formula = paste0("y ~", paste0(treatment_var,collapse = "+"), "+",
                 paste0(unlist(covariates), collapse = "+"),"+",
                 paste0(baseline_var, collapse = "+"))
-respltmle <- trajmsm_pltmle(formula = formula, identifier = "id", baseline = baseline_var,
+resmsm_pltmle <- trajmsm_pltmle(formula = formula, identifier = "id", baseline = baseline_var,
  covariates = covariates, treatment = treatment_var, outcome = "y",
  time = "time", time_values = years, number_traj = 3, total_followup = 6,
- trajmodel = restraj$traj_model, ref = "2", obsdata = trajmsm_wide, treshold = 0.99)
+ trajmodel = restraj$traj_model, ref = "1", obsdata = trajmsm_wide, treshold = 0.99)
+ resmsm_pltmle
 }
 \author{
 Awa Diop, Denis Talbot
