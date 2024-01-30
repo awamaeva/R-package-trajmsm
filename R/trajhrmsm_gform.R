@@ -18,7 +18,7 @@
 #' @param obsdata data in a long format.
 #' @param time name of the time variable.
 #' @param time_values measuring times.
-#' @return \item{trajMSM_gform }{g-formula}
+#' @return \item{trajhrmsm_gform }{trajhrmsm_gform lcga}
 #' @export
 #' @author Awa Diop Denis Talbot
 #' @examples

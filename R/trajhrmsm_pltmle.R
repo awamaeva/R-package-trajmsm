@@ -1,17 +1,22 @@
 #' @title Pooled LTMLE
 #' @description function to estimate parameters of a HRMSM-LCGA using Pooled LTMLE
 #' @name trajhrmsm_pltmle
-#' @param covariates names of time-varying covariates.
-#' @param V baseline covariates.
-#' @param A time-varying treatment.
-#' @param id name of the id column variable.
-#' @param Rep number of repetitions for the bootstrap.
-#' @param s number of measuring times per interval.
-#' @param K total length of follow-up.
+#' @param formula specification of the model for the outcome to be fitted for a binomial or gaussian distribution.
+#' @param family specification of the error distribution and link function to be used in the model.
+#' @param degree_traj to specify the polynomial degree for modelling the time-varying treatment.
+#' @param identifier  name of the column for unique identifiant.
+#' @param baseline name of baseline covariates.
+#' @param covariates names of time-varying covariates in a wide format.
+#' @param treatment name of time-varying treatment.
+#' @param var_cov names of the time-varying covariates in a long format.
+#' @param ntimes_interval length of a time-interval (s).
+#' @param total_followup total length of follow-up.
+#' @param censor name of the censoring variable.
+#' @param number_traj number of trajectory groups.
+#' @param rep number of repetition for the bootstrap.
+#' @param obsdata data in a long format.
 #' @param time name of the time variable.
 #' @param time_values measuring times.
-#' @param timevar name of the variable time.
-#' @param obsdata observed data in wide format.
 #' @noRd
 #' @return \item{results_hrmsm_pltmle}{Results from the LCGA-HRMSM with pooled ltmle}
 #' @author Awa Diop Denis Talbot
@@ -21,12 +26,12 @@
 #' years <- 2011:2018
 #' variables <- c("hyper", "bmi")
 #' covariates <- lapply(years, function(year) {
-#' paste0(variables, year)})
+#'   paste0(variables, year)})
 #' treatment_var <- paste0("statins", 2011:2018)
 #' var_cov <- c("statins","hyper", "bmi","y")
 #' respltmle = trajhrmsm_pltmle(degree_traj = "linear", treatment = treatment_var,covariates = covariates, baseline = baseline_var,
-#' outcome = paste0("y", 2016:2018),var_cov = var_cov, ntimes_interval = 6, total_followup = 8, time = "time",time_values = years, identifier = "id",
-#'                            number_traj = 3, family = "poisson", obsdata = obsdata_long)
+#'                             outcome = paste0("y", 2016:2018),var_cov = var_cov, ntimes_interval = 6, total_followup = 8, time = "time",time_values = years, identifier = "id",
+#'                              number_traj = 3, family = "poisson", obsdata = obsdata_long)
 #' respltmle$results_hrmsm_pltmle
 
 
@@ -86,140 +91,140 @@ trajhrmsm_pltmle <-  function(degree_traj = c("linear","quadratic","cubic"),
 
   if(length(unique(class)) == number_traj){
 
-  traj_indic=t(sapply(1:nregimes,function(x)sapply(1:number_traj,function(i) ifelse(class[x]==i,1,0))))
-  traj_indic[,1]=1 #Intercept
+    traj_indic=t(sapply(1:nregimes,function(x)sapply(1:number_traj,function(i) ifelse(class[x]==i,1,0))))
+    traj_indic[,1]=1 #Intercept
 
-  list_obsdata_pool <- list()
-  list_D <- list()
+    list_obsdata_pool <- list()
+    list_D <- list()
 
-  for(i in 1:nb_sub){
-  #Create the data under all the different regime of treatment
-  df = list_obsdata[[i]];
-  df_l = reshape(df, direction = "wide", idvar = identifier, v.names = var_cov, timevar = time, sep ="")
+    for(i in 1:nb_sub){
+      #Create the data under all the different regime of treatment
+      df = list_obsdata[[i]];
+      df_l = reshape(df, direction = "wide", idvar = identifier, v.names = var_cov, timevar = time, sep ="")
 
-  outcome_up <- outcome[outcome %in% colnames(df_l)]
-  treatment_up <- treatment[treatment %in% colnames(df_l)]
-  cov_up <- lapply(covariates, function(x)x[x %in% colnames(df_l)])
-  # Remove elements that are character(0)
-  cov_up  <-  cov_up [sapply( cov_up , length) > 0]
-
-
-  form = paste0(outcome_up, "~", paste0(treatment_up,collapse = "+"), "+",
-                paste0(unlist(cov_up), collapse = "+"),"+",
-                paste0(baseline, collapse = "+"))
-
-  res_pltmle = pltmle(formula = form, outcome = outcome_up,treatment = treatment_up,
-                      covariates = cov_up, baseline = baseline, ntimes_interval = ntimes_interval, number_traj = number_traj,
-                      time =  time,identifier = identifier,obsdata = df_l,traj=traj_indic, treshold = treshold);
-
-  obsdata_pool= data.frame(Y=res_pltmle$counter_means);
-  D=res_pltmle$D; #Influence functions
-  obsdata_pool$tmle_group = class
-  obsdata_pool$Interv <- i
-
-  list_obsdata_pool[i] <- list(obsdata_pool)
-  list_D[i] = list(D)
-
-  }
-
-  all_obsdata_pool <- data.frame(do.call(rbind, list_obsdata_pool))
-  all_obsdata_pool$tmle_group <- relevel(factor(all_obsdata_pool$tmle_group), ref = ref)
-  # Estimation
-  mod = glm(Y ~ factor(tmle_group) + factor(Interv), data =  all_obsdata_pool, family = family);
-  coefs = summary(mod)$coefficients[1:number_traj,1];
+      outcome_up <- outcome[outcome %in% colnames(df_l)]
+      treatment_up <- treatment[treatment %in% colnames(df_l)]
+      cov_up <- lapply(covariates, function(x)x[x %in% colnames(df_l)])
+      # Remove elements that are character(0)
+      cov_up  <-  cov_up [sapply( cov_up , length) > 0]
 
 
-  #Influence functions
-  Db_list  <- list()
-  Xall = t(model.matrix(mod))[1:number_traj,]
-  X = Xall[,1:nregimes]
-  B  = matrix(coefs, nrow = number_traj);
+      form = paste0(outcome_up, "~", paste0(treatment_up,collapse = "+"), "+",
+                    paste0(unlist(cov_up), collapse = "+"),"+",
+                    paste0(baseline, collapse = "+"))
 
-  len = seq(nregimes,ncol(Xall),nregimes-1)
-  # We have to select the corresponding model matrix for each time-interval (nregimes*nb_sub)
-  CQ_list <- list()
-  for(t in 1:(nb_sub-1)){
-    #x = pairs[,t]
-    Db = matrix(0, nrow = nrow(list_D[[t]][[1]]), ncol = number_traj);
-    CQ = lapply(1:nregimes,function(i)(as.matrix(X[,i]))%*%(t(exp(as.matrix(t(X[,i]))%*%B)))%*%t(as.matrix(((X[,i])))));
-    CQ = Reduce('+',CQ);
-    CQ_list[t] <- list(CQ)
-    for(l in 1:nregimes){
-      Db = Db+as.matrix(list_D[[t]][[l]])%*%solve(CQ);
+      res_pltmle = pltmle(formula = form, outcome = outcome_up,treatment = treatment_up,
+                          covariates = cov_up, baseline = baseline, ntimes_interval = ntimes_interval, number_traj = number_traj,
+                          time =  time,identifier = identifier,obsdata = df_l,traj=traj_indic, treshold = treshold);
+
+      obsdata_pool= data.frame(Y=res_pltmle$counter_means);
+      D=res_pltmle$D; #Influence functions
+      obsdata_pool$tmle_group = class
+      obsdata_pool$Interv <- i
+
+      list_obsdata_pool[i] <- list(obsdata_pool)
+      list_D[i] = list(D)
+
     }
 
-    Db_list[t] <- list(Db)
-    X  = Xall[,len[t]:len[t+1]]
+    all_obsdata_pool <- data.frame(do.call(rbind, list_obsdata_pool))
+    all_obsdata_pool$tmle_group <- relevel(factor(all_obsdata_pool$tmle_group), ref = ref)
+    # Estimation
+    mod = glm(Y ~ factor(tmle_group) + factor(Interv), data =  all_obsdata_pool, family = family);
+    coefs = summary(mod)$coefficients[1:number_traj,1];
+
+
+    #Influence functions
+    Db_list  <- list()
+    Xall = t(model.matrix(mod))[1:number_traj,]
+    X = Xall[,1:nregimes]
+    B  = matrix(coefs, nrow = number_traj);
+
+    len = seq(nregimes,ncol(Xall),nregimes-1)
+    # We have to select the corresponding model matrix for each time-interval (nregimes*nb_sub)
+    CQ_list <- list()
+    for(t in 1:(nb_sub-1)){
+      #x = pairs[,t]
+      Db = matrix(0, nrow = nrow(list_D[[t]][[1]]), ncol = number_traj);
+      CQ = lapply(1:nregimes,function(i)(as.matrix(X[,i]))%*%(t(exp(as.matrix(t(X[,i]))%*%B)))%*%t(as.matrix(((X[,i])))));
+      CQ = Reduce('+',CQ);
+      CQ_list[t] <- list(CQ)
+      for(l in 1:nregimes){
+        Db = Db+as.matrix(list_D[[t]][[l]])%*%solve(CQ);
+      }
+
+      Db_list[t] <- list(Db)
+      X  = Xall[,len[t]:len[t+1]]
+    }
+
+    #Last Window
+    X = Xall[, len[nb_sub-1]:ncol(Xall)]
+    CQ = lapply(1:nregimes,function(i)(as.matrix(X[,i]))%*%(t(exp(as.matrix(t(X[,i]))%*%B)))%*%t(as.matrix(((X[,i])))));
+    CQ = Reduce('+',CQ);
+    CQ_list[3] <- list(CQ)
+    Db = matrix(0, nrow = nrow(list_D[[nb_sub]][[1]]), ncol = number_traj);
+    for(l in 1:nregimes){
+      Db = Db+as.matrix(list_D[[nb_sub]][[l]])%*%solve(CQ);
+    }
+
+    Db_list[nb_sub] <- list(as.matrix(Db))
+
+    #Computation
+
+    #All pairs of 2 without repetition
+    pairs = combn(nb_sub, 2)
+    list_df = Db_list
+    #sample nregimes for each dataframe of influences functions
+    n_df <- lapply(list_obsdata, function(x) nrow(na.omit(data.frame(x))))
+
+    #variances
+
+    var <- lapply(1:nb_sub,function(i){
+      vr = diag(var(data.frame(list_df[[i]]),na.rm = TRUE))
+      return(vr)}
+    )
+
+    #covariance
+    cov <- lapply(1:ncol(pairs),function(i){
+      x = pairs[,i]
+      temp_df1 = data.frame(list_df[[x[1]]])
+      temp_df2 = data.frame(list_df[[x[2]]])
+
+      temp_df1$id1 <- list_obsdata[[x[1]]][1:nrow(temp_df1),identifier]
+      temp_df2$id2 <- list_obsdata[[x[2]]][1:nrow(temp_df2),identifier]
+
+      vrc = sapply(1:number_traj, function(j){
+        res = mean(temp_df1[temp_df1$id1%in%temp_df2$id2,j]*temp_df2[temp_df2$id2%in%temp_df1$id1,j],na.rm = TRUE)-
+          mean(temp_df1[temp_df1$id1%in%temp_df2$id2,j],na.rm = TRUE)*mean(temp_df2[temp_df2$id2%in%temp_df1$id1,j],na.rm = TRUE)
+        return(res)})
+      return(vrc)}
+    )
+
+    # minimum sample nregimes per pairs of values
+    min_ndf <- lapply(1:ncol(pairs),function(i){
+      x = pairs[,i]
+      min_ndf = min(n_df[[x[1]]], n_df[[x[2]]])
+      return(min_ndf)
+    })
+
+    all_cov <- lapply(1:length(min_ndf),function(i){
+
+      cov_temp = 2*min_ndf[[i]]*cov[[i]]
+    })
+
+    all_var = lapply(1:nb_sub,function(i){
+      var_temp= n_df[[i]]*as.numeric(var[[i]])
+      return(var_temp)}
+    )
+
+    se = sqrt((Reduce('+',all_cov) + Reduce('+',all_var))/(Reduce('+',n_df)**2))
+    pvalue <- 2*pnorm(-abs(coefs)/se)
+    #Results
+    lo.ci = coefs - 1.96*se ;
+    up.ci = coefs + 1.96*se
+    results_hrmsm_pltmle = cbind(coefs, se, pvalue, lo.ci, up.ci)
+    colnames(results_hrmsm_pltmle) = c("Estimate", "Std.Error", "Pvalue", "Lower CI", "Upper CI");
+    return(list(results_hrmsm_pltmle= results_hrmsm_pltmle, restraj = restraj, mean_adh = mean_adh))
   }
-
-  #Last Window
-  X = Xall[, len[nb_sub-1]:ncol(Xall)]
-  CQ = lapply(1:nregimes,function(i)(as.matrix(X[,i]))%*%(t(exp(as.matrix(t(X[,i]))%*%B)))%*%t(as.matrix(((X[,i])))));
-  CQ = Reduce('+',CQ);
-  CQ_list[3] <- list(CQ)
-  Db = matrix(0, nrow = nrow(list_D[[nb_sub]][[1]]), ncol = number_traj);
-  for(l in 1:nregimes){
-    Db = Db+as.matrix(list_D[[nb_sub]][[l]])%*%solve(CQ);
-  }
-
-  Db_list[nb_sub] <- list(as.matrix(Db))
-
-  #Computation
-
-  #All pairs of 2 without repetition
-  pairs = combn(nb_sub, 2)
-  list_df = Db_list
-  #sample nregimes for each dataframe of influences functions
-  n_df <- lapply(list_obsdata, function(x) nrow(na.omit(data.frame(x))))
-
-  #variances
-
-  var <- lapply(1:nb_sub,function(i){
-    vr = diag(var(data.frame(list_df[[i]]),na.rm = TRUE))
-    return(vr)}
-  )
-
-  #covariance
-  cov <- lapply(1:ncol(pairs),function(i){
-    x = pairs[,i]
-    temp_df1 = data.frame(list_df[[x[1]]])
-    temp_df2 = data.frame(list_df[[x[2]]])
-
-    temp_df1$id1 <- list_obsdata[[x[1]]][1:nrow(temp_df1),identifier]
-    temp_df2$id2 <- list_obsdata[[x[2]]][1:nrow(temp_df2),identifier]
-
-    vrc = sapply(1:number_traj, function(j){
-      res = mean(temp_df1[temp_df1$id1%in%temp_df2$id2,j]*temp_df2[temp_df2$id2%in%temp_df1$id1,j],na.rm = TRUE)-
-        mean(temp_df1[temp_df1$id1%in%temp_df2$id2,j],na.rm = TRUE)*mean(temp_df2[temp_df2$id2%in%temp_df1$id1,j],na.rm = TRUE)
-      return(res)})
-    return(vrc)}
-  )
-
-  # minimum sample nregimes per pairs of values
-  min_ndf <- lapply(1:ncol(pairs),function(i){
-    x = pairs[,i]
-    min_ndf = min(n_df[[x[1]]], n_df[[x[2]]])
-    return(min_ndf)
-  })
-
-  all_cov <- lapply(1:length(min_ndf),function(i){
-
-    cov_temp = 2*min_ndf[[i]]*cov[[i]]
-  })
-
-  all_var = lapply(1:nb_sub,function(i){
-    var_temp= n_df[[i]]*as.numeric(var[[i]])
-    return(var_temp)}
-  )
-
-  se = sqrt((Reduce('+',all_cov) + Reduce('+',all_var))/(Reduce('+',n_df)**2))
-  pvalue <- 2*pnorm(-abs(coefs)/se)
-  #Results
-  lo.ci = coefs - 1.96*se ;
-  up.ci = coefs + 1.96*se
-  results_hrmsm_pltmle = cbind(coefs, se, pvalue, lo.ci, up.ci)
-  colnames(results_hrmsm_pltmle) = c("Estimate", "Std.Error", "Pvalue", "Lower CI", "Upper CI");
-  return(list(results_hrmsm_pltmle= results_hrmsm_pltmle, restraj = restraj, mean_adh = mean_adh))
-}
 
 }
