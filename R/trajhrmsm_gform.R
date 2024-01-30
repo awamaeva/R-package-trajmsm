@@ -1,5 +1,5 @@
-#' @title Estimating parameters of LCGA-HRMSM using g-formula
-#' @description function to estimate parameters of a LCGA-HRMSM using g-formula
+#' @title History Restricted MSM and Latent Class of Growth Analysis estimated with G-formula.
+#' @description Estimate parameters of LCGA-HRMSM Using g-formula.
 #'  and bootstrap to get standard errors.
 #' @name trajhrmsm_gform
 #' @param formula specification of the model for the outcome to be fitted for a binomial or gaussian distribution.

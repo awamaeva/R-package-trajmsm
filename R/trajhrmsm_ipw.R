@@ -1,5 +1,5 @@
-#' @title Marginal Structural Model and Latent Class of Growth Analysis estimated with IPW
-#' @description Combine Marginal Structural Model and Latent Class of Growth Analysis
+#' @title History Restricted MSM and Latent Class of Growth Analysis estimated with IPW.
+#' @description Estimate parameters of LCGA-HRMSM Using a Pooled LTMLE.
 #' @name trajhrmsm_ipw
 #' @param formula specification of the model for the outcome to be fitted for a binomial or gaussian distribution.
 #' @param family specification of the error distribution and link function to be used in the model.

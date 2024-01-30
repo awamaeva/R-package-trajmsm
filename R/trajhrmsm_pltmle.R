@@ -1,5 +1,5 @@
-#' @title Pooled LTMLE
-#' @description function to estimate parameters of a HRMSM-LCGA using Pooled LTMLE
+#' @title History Restricted MSM and Latent Class of Growth Analysis estimated with a Pooled LTMLE.
+#' @description Estimate parameters of LCGA-HRMSM Using a Pooled LTMLE.
 #' @name trajhrmsm_pltmle
 #' @param formula specification of the model for the outcome to be fitted for a binomial or gaussian distribution.
 #' @param family specification of the error distribution and link function to be used in the model.
