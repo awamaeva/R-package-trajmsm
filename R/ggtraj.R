@@ -14,7 +14,8 @@
 #' @export ggtraj
 #' @examples
 #' obsdata_long = gendata(n = 1000, format = "long", total_followup = 12, seed = 945)
-#' restraj = build_traj(obsdata = obsdata_long, number_traj = 3, formula = as.formula(cbind(statins, 1 - statins) ~ time), identifier = "id")
+#' restraj = build_traj(obsdata = obsdata_long, number_traj = 3,
+#' formula = as.formula(cbind(statins, 1 - statins) ~ time), identifier = "id")
 #' datapost = restraj$data_post
 #' head(datapost)
 #' traj_data_long <- merge(obsdata_long, datapost, by = "id")

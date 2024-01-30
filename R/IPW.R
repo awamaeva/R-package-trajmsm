@@ -14,13 +14,14 @@
 #' @export
 #' @author Awa Diop, Denis Talbot
 #' @examples
-#' Obsdata = gendata(n = 1000, format = "wide",total_followup = 3, seed = 945)
+#' obsdata = gendata(n = 1000, format = "wide",total_followup = 3, seed = 945)
 #' baseline_var <- c("age","sex")
-#' covariates <- list(c("hyper2011", "bmi2011"),c("hyper2012", "bmi2012"),c("hyper2013", "bmi2013"))
+#' covariates <- list(c("hyper2011", "bmi2011"),
+#' c("hyper2012", "bmi2012"),c("hyper2013", "bmi2013"))
 #' treatment_var <- c("statins2011","statins2012","statins2013")
-#' stabilized_weights = inverse_probability_weighting(numerator = "stabilized", identifier = "id",
-#'         covariates = covar, treatment = treatment_var, baseline = baseline_var,
-#'           total_followup = 3,obsdata = Obsdata)
+#' stabilized_weights = inverse_probability_weighting(numerator = "stabilized",
+#' identifier = "id", covariates = covariates, treatment = treatment_var,
+#' baseline = baseline_var, total_followup = 3,obsdata = obsdata)
 
 inverse_probability_weighting <- function(numerator = c("stabilized", "unstabilized"), identifier,
                                           baseline, covariates, treatment,

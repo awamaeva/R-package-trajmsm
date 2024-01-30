@@ -16,7 +16,7 @@
 #' @param treshold For weight truncation.
 #' @return Stabilized and unstabilized inverse of probabilities
 #' @export trajmsm_ipw
-#' @importFrom sandwich
+#' @import sandwich
 #' @importFrom survival coxph
 #' @import flexmix
 #' @examples
@@ -28,21 +28,25 @@
 #' paste0(variables, year)})
 #' treatment_var <- paste0("statins", 2011:2016)
 #' formula_treatment = as.formula(cbind(statins, 1 - statins) ~ time)
-#' restraj = build_traj(obsdata = obsdata_long, number_traj = 3, formula = formula_treatment, identifier = "id")
+#' restraj = build_traj(obsdata = obsdata_long, number_traj = 3,
+#' formula = formula_treatment, identifier = "id")
 #' datapost = restraj$data_post
 #' trajmsm_long <- merge(obsdata_long, datapost, by = "id")
 #'     AggFormula <- as.formula(paste("statins", "~", "time", "+", "class"))
 #'     AggTrajData <- aggregate(AggFormula, data = trajmsm_long, FUN = mean)
 #'     AggTrajData
-#' trajmsm_wide = reshape(data = trajmsm_long, direction = "wide", idvar = "id",
+#' trajmsm_long$ipw_group <- relevel(trajmsm_long$class, ref = "1")
+#' obsdata = reshape(data = trajmsm_long, direction = "wide", idvar = "id",
 #' v.names = c("statins","bmi","hyper"), timevar = "time", sep ="")
 #' formula = paste0("y ~", paste0(treatment_var,collapse = "+"), "+",
 #'                 paste0(unlist(covariates), collapse = "+"),"+",
 #'                 paste0(baseline_var, collapse = "+"))
-#' trajmsm_ipw(formula1 = as.formula("y ~ class"),
-#'            identifier = "id", baseline = baseline_var, covariates = covariates, treatment = treatment_var,
-#'            number_traj=3,total_followup = 6, family = "binomial",
-#'            obsdata = trajmsm_wide,numerator = "stabilized", include_censor = FALSE)
+#'
+#'resmsm_ipw = trajmsm_ipw(formula1 = as.formula("y ~ ipw_group"),
+#'            identifier = "id", baseline = baseline_var, covariates = covariates,
+#'            treatment = treatment_var, number_traj=3,total_followup = 6, family = "binomial",
+#'            obsdata = obsdata,numerator = "stabilized", include_censor = FALSE)
+#'resmsm_ipw
 
 
 trajmsm_ipw <- function(formula1, formula2, family, identifier, treatment, covariates,

@@ -7,7 +7,7 @@
 #' @export gendata
 #' @return A data frame with generated trajectories.
 #' @examples
-#' gendata(n = 100, include_censor = FALSE, format = "wide",total_followup = 3)
+#' gendata(n = 100, include_censor = FALSE, format = "wide",total_followup = 3, seed = 945)
 
 gendata<- function(n, include_censor = FALSE, format = c("long", "wide"),start_year = 2011, total_followup, timedep_outcome = FALSE, seed) {
   set.seed(seed)
@@ -21,13 +21,13 @@ gendata<- function(n, include_censor = FALSE, format = c("long", "wide"),start_y
   statins <- hyper <- bmi <- censor <- matrix(NA, nrow = n, ncol = total_followup)
   bmi[, 1] <-   rbinom(n, 1, plogis(0.15 * age + 0.7 * sex))
   hyper[, 1] <-  rbinom(n, 1, plogis(.15 * age + 0.7 * sex + 0.1 * bmi[, 1]))
-  statins[, 1] <- rbinom(n, 1, plogis(-.15 + 0.4 * age + 0.25* sex - 0.1 * bmi[, 1] - 0.2*hyper[, 1]))
+  statins[, 1] <- rbinom(n, 1, plogis(.5 + 0.4 * age + 0.25* sex - 0.1 * bmi[, 1] - 0.2*hyper[, 1]))
   censor[, 1] <-  rbinom(n, 1, plogis(-2 + 0.2 * age + 0.01 * sex + 0.1 * bmi[, 1] - 0.2*hyper[, 1] - 0.5*statins[, 1]))
   # Generate data based on conditions
   for (i in 2:total_followup) {
     bmi[, i] <- rbinom(n, 1, plogis(0.15 * age + 0.7 * sex - 0.25 * statins[, i-1]))
     hyper[, i] <- rbinom(n, 1, plogis(0.15 * age + 0.7 * sex + 0.1 * bmi[, i] - 0.35 * statins[, i-1]))
-    statins[, i] <- rbinom(n, 1, plogis(-0.15 + 0.1 * age + 0.1 * sex - 0.1 * bmi[, i] - 0.2*hyper[, i] + (seq(0.15,1,length.out = total_followup)[i-1])* statins[, i-1] ))
+    statins[, i] <- rbinom(n, 1, plogis(.5 + 0.1 * age + 0.1 * sex - 0.1 * bmi[, i] - 0.2*hyper[, i] + (seq(0.15,1,length.out = total_followup)[i-1])* statins[, i-1] ))
     if (include_censor) {
       censor[, i] <- rbinom(n, 1, plogis(-2 + 0.02 * age + 0.01 * sex - 0.5 * statins[, i] + 0.1 * hyper[, i] + 0.2 * bmi[, i]))
     }
@@ -124,5 +124,3 @@ gendata<- function(n, include_censor = FALSE, format = c("long", "wide"),start_y
 return(obsdata)
 }
 
-obsdata <- gendata(n = 100, format = "long",timedep_outcome = FALSE, total_followup = 8, seed = 945)
-obsdata <- gendata(n = 100, format = "long",timedep_outcome = TRUE, total_followup = 8, seed = 945)

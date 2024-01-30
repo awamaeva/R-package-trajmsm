@@ -10,16 +10,9 @@
 #' @param obsdata observed data in wide format.
 #' @returns  \item{list_gform_countermeans}{Counterfactual means obtained with g-formula.}
 #' @import e1071
+#' @export
 #' @author Awa Diop, Denis Talbot
-#' @examples
-#' obsdata_wide = gendata_trajmsm(n = 1000, format = "wide", seed = 945)
-#' baseline_var <- c("age","sex")
-#' covariates <- list(c("hyper2011", "bmi2011"),c("hyper2012", "bmi2012"),c("hyper2013", "bmi2013"))
-#' treatment_var <- c("statins2011","statins2012","statins2013")
-#' res_gform = gformula(formula = as.formula(" y ~ statins2011 + statins2012 + statins2013 + hyper2011 + bmi2011 + hyper2012 + bmi2012 +
-#'                                               hyper2013 + bmi2013 + age + sex " ), baseline = baseline, covariates = covariates,
-#' treatment = treatment, outcome = outcome, ntimes_interval = 3, obsdata = obsdata_wide)
-#' res_gform$counter_means
+
 
 gformula <- function(formula, baseline, covariates, treatment, outcome, ntimes_interval, obsdata) {
 nregimes <- 2^ntimes_interval  # Number of treatment regimes

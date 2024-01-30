@@ -8,6 +8,7 @@
 #' @param total_follow_up Total length of follow-up.
 #' @param obsdata Observed data in wide format.
 #' @return Unstabilized inverse of treatment probabilities
+#' @noRd
 #' @export
 #' @author Awa Diop, Denis Talbot
 #' @note This function requires data in a wide format.

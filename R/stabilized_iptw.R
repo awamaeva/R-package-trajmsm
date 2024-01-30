@@ -8,7 +8,9 @@
 #' @param total_followup Total length of follow-up.
 #' @param obsdata Observed data in wide format.
 #' @return Stabilized inverse of treatment probabilities
+#' @noRd
 #' @export
+#' @note This function requires data in a wide format.
 #' @author Awa Diop, Denis Talbot
 
 stabilized_iptw <- function(identifier, treatment, covariates, baseline, total_followup, obsdata) {

@@ -1,6 +1,6 @@
 #' @title Counterfactual means for a Pooled LTMLE
 #' @description function to estimate counterfactual means for a pooled LTMLE.
-#' @name sub_pltmle
+#' @name pltmle
 #' @param formula specification of the model for the outcome to be fitted.
 #' @param identifier  name of the column for unique identifiant.
 #' @param covariates covariates.
@@ -13,32 +13,37 @@
 #' @returns  \item{list_pltmle_countermeans}{Counterfactual means and influence functions with the pooled ltmle.}
 #' \item{D}{Influence functions}
 #' @import e1071
+#' @export
 #' @examples
-#' Obsdata_long = gendata_trajmsm(n = 2000, format = "long", seed = 945)
+#' obsdata_long = gendata(n = 2000, format = "long",total_followup = 3, seed = 945)
 #' baseline_var <- c("age","sex")
-#' covariates <- list(c("hyper2011", "bmi2011"),c("hyper2012", "bmi2012"),c("hyper2013", "bmi2013"))
+#' covariates <- list(c("hyper2011", "bmi2011"),
+#' c("hyper2012", "bmi2012"),c("hyper2013", "bmi2013"))
 #' treatment_var <- c("statins2011","statins2012","statins2013")
 #' time_values <- c(2011,2012,2013)
 #' formulaA = as.formula(cbind(statins, 1 - statins) ~ time)
-#' restraj = build_traj(obsdata = Obsdata_long, number_traj = 3, formula = formulaA, identifier = "id")
+#' restraj = build_traj(obsdata = obsdata_long, number_traj = 3,
+#' formula = formulaA, identifier = "id")
 #' datapost = restraj$data_post
-#' trajmsm_long <- merge(Obsdata_long, datapost, by = "id")
+#' trajmsm_long <- merge(obsdata_long, datapost, by = "id")
 #'     AggFormula <- as.formula(paste("statins", "~", "time", "+", "class"))
 #'     AggTrajData <- aggregate(AggFormula, data = trajmsm_long, FUN = mean)
 #'     AggTrajData
 #' trajmsm_long[ , "traj_group"] <- trajmsm_long[ , "class"]
 #' trajmsm_wide = reshape(trajmsm_long, direction = "wide", idvar = "id",
 #' v.names = c("statins","bmi","hyper"), timevar = "time", sep ="")
-#' formulaY =  as.formula(" y ~ statins2011 + statins2012 + statins2013 + hyper2011 + bmi2011 + hyper2012 + bmi2012 +
-#'                                     hyper2013 + bmi2013 + age + sex ")
+#' formula =  as.formula(" y ~ statins2011 + statins2012 + statins2013 +
+#' hyper2011 + bmi2011 + hyper2012 + bmi2012 +
+#'  hyper2013 + bmi2013 + age + sex ")
 #' class = factor(predict_traj(identifier = "id", total_followup = 3,
 #'         treatment = "statins", time = "time", time_values = time_values,
 #'         trajmodel = restraj$traj_model)$post_class);
-#' traj_indic=t(sapply(1:nregimes,function(x)sapply(1:number_traj,function(i) ifelse(class[x]==i,1,0))))
-#' traj_indic[,1]=1
-#' res_pltmle = pltmle(formula = formulaY, outcome = outcome,treatment = treatment_var,
-#'                   covariates = covar, baseline = baseline_var, ntimes_interval = 3, number_traj = 3,
-#'                  time =  "Time",time_values = time_values,identifier = "id",obsdata = trajmsm_wide,traj=traj_indic, treshold = 0.99)
+#' traj=t(sapply(1:8,function(x)sapply(1:3,function(i)ifelse(class[x]==i,1,0))))
+#' traj[,1]=1
+#' res_pltmle = pltmle(formula = formula, outcome = "y",treatment = treatment_var,
+#' covariates = covariates, baseline = baseline_var, ntimes_interval = 3, number_traj = 3,
+#'  time =  "time",time_values = time_values,identifier = "id",obsdata = trajmsm_wide,
+#' traj=traj, treshold = 0.99)
 #' res_pltmle$counter_means
 #' @author Awa Diop, Denis Talbot
 
@@ -83,7 +88,7 @@ pltmle <- function(formula, outcome, treatment, covariates, baseline, ntimes_int
   Weights = inverse_probability_weighting(identifier = identifier, covariates = covariates,
                                           treatment = treatment, baseline = baseline,
                                           total_followup = total_followup, numerator = "unstabilized",
-                                          include_censor = include_censor, censor = censor,obsdata = obsdata)[[1]];
+                                          include_censor = FALSE, censor = censor,obsdata = obsdata)[[1]];
 
   weights_trunc <- sapply(1:ntimes_interval, function(x){
   weights <- ifelse(quantile(Weights[, x], treshold, na.rm = TRUE)> Weights[, x], quantile(Weights[, x], treshold, na.rm = TRUE), Weights[, x])

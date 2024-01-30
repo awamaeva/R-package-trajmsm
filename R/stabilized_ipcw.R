@@ -9,6 +9,7 @@
 #' @param censor Name of the censoring variable.
 #' @param obsdata Observed data in wide format.
 #' @return Stabilized Inverse Probability of Censoring Weights
+#' @noRd
 #' @export
 #' @author Awa Diop, Denis Talbot
 #' @note This function requires data in a wide format.

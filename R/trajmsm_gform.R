@@ -9,40 +9,47 @@
 #' @param treatment vector of names of the time-varying treatment.
 #' @param outcome name of the outcome of interest.
 #' @param total_followup of measuring times.
-#' @param time name of the variable time.
+#' @param time name of the time variable.
+#' @param time_values measuring times.
 #' @param rep number of repetitions for the bootstrap.
 #' @param trajmodel trajectory model built with the observed treatment.
+#' @param var_cov names of the time-varying covariates in a long format.
 #' @param ref the reference trajectory group.
 #' @param obsdata observed data in wide format.
 #' @return \item{results_msm_gform}{Estimates of a LCGA-MSM with g-formula.}
-#' @export trajmsm_gform
+#' @export
 #' @examples
-#' obsdata_long = gendata(n = 2000, format = "long", total_followup = 6, seed = 1945)
+#' obsdata_long = gendata(n = 1000, format = "long", total_followup = 6, seed = 945)
 #' years <- 2011:2016
 #' baseline_var <- c("age","sex")
 #' variables <- c("hyper", "bmi")
+#' var_cov <- c("statins","hyper", "bmi")
 #' covariates <- lapply(years, function(year) {
 #' paste0(variables, year)})
 #' treatment_var <- paste0("statins", 2011:2016)
 #' formula_treatment = as.formula(cbind(statins, 1 - statins) ~ time)
-#' restraj = build_traj(obsdata = obsdata_long, number_traj = 3, formula = formula_treatment, identifier = "id")
+#' restraj = build_traj(obsdata = obsdata_long, number_traj = 3,
+#' formula = formula_treatment, identifier = "id")
 #' datapost = restraj$data_post
 #' trajmsm_long <- merge(obsdata_long, datapost, by = "id")
 #'     AggFormula <- as.formula(paste("statins", "~", "time", "+", "class"))
 #'     AggTrajData <- aggregate(AggFormula, data = trajmsm_long, FUN = mean)
 #'     AggTrajData
-#' trajmsm_wide = reshape(data = trajmsm_long, direction = "wide", idvar = "id",
+#' obsdata = reshape(data = trajmsm_long, direction = "wide", idvar = "id",
 #' v.names = c("statins","bmi","hyper"), timevar = "time", sep ="")
 #'formula = paste0("y ~", paste0(treatment_var,collapse = "+"), "+",
 #'                 paste0(unlist(covariates), collapse = "+"),"+",
 #'                 paste0(baseline_var, collapse = "+"))
-#'trajmsm_gform(formula = formula, identifier = "id",rep = 2, baseline = baseline_var, covariates = covariates,
-#'                                     treatment = treatment_var, outcome = "y", total_followup = 6,time = "time",
-#'                                     trajmodel = restraj$traj_model,ref = "1", obsdata = trajmsm_wide)
+#'resmsm_gform <- trajmsm_gform(formula = formula, identifier = "id",rep = 5,
+#'baseline = baseline_var, covariates = covariates, var_cov = var_cov,
+#'treatment = treatment_var, outcome = "y", total_followup = 6,time = "time",
+#' time_values = years, trajmodel = restraj$traj_model,ref = "1", obsdata =   obsdata )
+#' resmsm_gform
 #' @author Awa Diop Denis Talbot
 
 trajmsm_gform <- function(formula = formula, rep = 50,
-                                  identifier,baseline,covariates,treatment,outcome, total_followup,time = time,
+                                  identifier,baseline,covariates,treatment,outcome,
+                                  total_followup,time = time,time_values, var_cov,
                                   trajmodel,ref, obsdata){
 
 
@@ -60,8 +67,9 @@ trajmsm_gform <- function(formula = formula, rep = 50,
     bootf=function(df,x=index){
       #Echantillons bootstrap
       df=obsdata[x,];
-      res = gformula(formula = formula,outcome = outcome, treatment = treatment, covariates = covariates,baseline = baseline,
-                     ntimes_interval = total_followup, obsdata = df)$counter_means
+
+      res = gformula(formula = formula,outcome = outcome, treatment = treatment, covariates = covariates,
+                     baseline = baseline,ntimes_interval = total_followup, obsdata = df)$counter_means
       colnames(res) <- "Y";
 
       #Counterfactual means + trajectory groups
@@ -69,7 +77,7 @@ trajmsm_gform <- function(formula = formula, rep = 50,
       treatment_names <- sub("\\d+", "", treatment)
       treatment_name <- unique(treatment_names)[1]
       obsdataG$gform_group = factor(predict_traj(identifier = identifier, total_followup = total_followup,
-                                                 treatment = treatment_name, time = time,
+                                                 treatment = treatment_name, time = time,time_values = time_values,
                                                  trajmodel = trajmodel)$post_class);
 
       obsdataG$gform_group <- relevel(as.factor(obsdataG$gform_group), ref = ref)
@@ -94,8 +102,10 @@ trajmsm_gform <- function(formula = formula, rep = 50,
 
     #Counterfactual means + trajectory groups
     obsdataG = data.frame(res);
+    treatment_names <- sub("\\d+", "", treatment)
+    treatment_name <- unique(treatment_names)[1]
     obsdataG$gform_group = factor(predict_traj(identifier = identifier, total_followup = total_followup,
-                                               treatment = treatment_name, time = time,
+                                               treatment = treatment_name, time = time,time_values = time_values,
                                                trajmodel = trajmodel)$post_class);
     obsdataG$gform_group <- relevel(as.factor(obsdataG$gform_group), ref = ref)
     #Estimation

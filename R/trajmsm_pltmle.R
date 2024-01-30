@@ -14,7 +14,7 @@
 #' @param ref the reference group.
 #' @export trajmsm_pltmle
 #' @examples
-#' obsdata_long = gendata(n = 2000, format = "long", total_followup = 6, seed = 945)
+#' obsdata_long = gendata(n = 1000, format = "long", total_followup = 6, seed = 945)
 #' years <- 2011:2016
 #' baseline_var <- c("age","sex")
 #' variables <- c("hyper", "bmi")
@@ -22,7 +22,8 @@
 #' paste0(variables, year)})
 #' treatment_var <- paste0("statins", 2011:2016)
 #' formula_treatment = as.formula(cbind(statins, 1 - statins) ~ time)
-#' restraj = build_traj(obsdata = obsdata_long, number_traj = 3, formula = formula_treatment, identifier = "id")
+#' restraj = build_traj(obsdata = obsdata_long, number_traj = 3,
+#' formula = formula_treatment, identifier = "id")
 #' datapost = restraj$data_post
 #' trajmsm_long <- merge(obsdata_long, datapost, by = "id")
 #'     AggFormula <- as.formula(paste("statins", "~", "time", "+", "class"))
@@ -33,16 +34,17 @@
 #'formula = paste0("y ~", paste0(treatment_var,collapse = "+"), "+",
 #'                 paste0(unlist(covariates), collapse = "+"),"+",
 #'                 paste0(baseline_var, collapse = "+"))
-#'trajmsm_pltmle(formula = formula, identifier = "id", baseline = baseline_var,
-#'               covariates = covariates, treatment = treatment_var, outcome = "y",
-#'              time = "time", number_traj = 3, total_followup = 6,
-#'              trajmodel = restraj$traj_model, ref = "3", obsdata = trajmsm_wide, treshold = 0.99)
+#' resmsm_pltmle <- trajmsm_pltmle(formula = formula, identifier = "id", baseline = baseline_var,
+#'  covariates = covariates, treatment = treatment_var, outcome = "y",
+#'  time = "time", time_values = years, number_traj = 3, total_followup = 6,
+#'  trajmodel = restraj$traj_model, ref = "1", obsdata = trajmsm_wide, treshold = 0.99)
+#'  resmsm_pltmle
 #' @return \item{results_msm_pooledltmle}{Estimates of a LCGA-MSM with pooled LTMLE.}
 #' @author Awa Diop, Denis Talbot
 
 
 trajmsm_pltmle <- function(formula = formula,identifier,baseline,covariates,treatment,outcome,
-                                 number_traj,total_followup, time,trajmodel,ref,obsdata,treshold=0.999){
+                                 number_traj,total_followup, time, time_values , trajmodel,ref,obsdata,treshold=0.999){
 
  stopifnot(!is.null(identifier));
  stopifnot(!is.null(baseline));
@@ -59,7 +61,7 @@ trajmsm_pltmle <- function(formula = formula,identifier,baseline,covariates,trea
      treatment_names <- sub("\\d+", "", treatment)
      treatment_name <- unique(treatment_names)[1]
      class = factor(predict_traj(identifier = identifier, total_followup = total_followup,
-                                 treatment = treatment_name, time = time,
+                                 treatment = treatment_name, time = time, time_values = time_values,
                                  trajmodel = trajmodel)$post_class);
      if(length(unique(class)) < number_traj){
        stop(paste("Number of predicted trajectory groups inferior to", number_traj))

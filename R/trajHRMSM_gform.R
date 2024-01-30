@@ -1,5 +1,5 @@
-#' @title g-formula without SuperLearner
-#' @description function to estimate parameters of a HRMSM-LCGA using g-formula
+#' @title Estimating parameters of LCGA-HRMSM using g-formula
+#' @description function to estimate parameters of a LCGA-HRMSM using g-formula
 #'  and bootstrap to get standard errors.
 #' @name trajhrmsm_gform
 #' @param formula specification of the model for the outcome to be fitted for a binomial or gaussian distribution.
@@ -16,11 +16,14 @@
 #' @param number_traj number of trajectory groups.
 #' @param rep number of repetition for the bootstrap.
 #' @param obsdata data in a long format.
-#' @noRd
+#' @param time name of the time variable.
+#' @param time_values measuring times.
 #' @return \item{trajMSM_gform }{g-formula}
+#' @export
 #' @author Awa Diop Denis Talbot
 #' @examples
-#' obsdata_long = gendata(n = 1000, format = "long", total_followup = 8, timedep_outcome = TRUE,  seed = 945)
+#' obsdata_long = gendata(n = 1000, format = "long", total_followup = 8,
+#' timedep_outcome = TRUE,  seed = 945)
 #' baseline_var <- c("age","sex")
 #' years <- 2011:2018
 #' variables <- c("hyper", "bmi")
@@ -28,10 +31,12 @@
 #' paste0(variables, year)})
 #' treatment_var <- paste0("statins", 2011:2018)
 #' var_cov <- c("statins","hyper", "bmi")
-#' resgform = trajhrmsm_gform(degree_traj = "linear", rep=2 , treatment = treatment_var,covariates = covariates, baseline = baseline_var,
-#' outcome = "y",var_cov = var_cov, ntimes_interval = 6, total_followup = 8, time = "time",time_values = years, identifier = "id",
-#'                            number_traj = 3, family = "poisson", obsdata = obsdata_long)
-#'resgform$results_hrmsm_gform
+#' reshrmsm_gform = trajhrmsm_gform(degree_traj = "linear", rep=5 ,
+#' treatment = treatment_var,covariates = covariates, baseline = baseline_var,
+#' outcome = "y",var_cov = var_cov, ntimes_interval = 6, total_followup = 8,
+#'  time = "time",time_values = years, identifier = "id",
+#' number_traj = 3, family = "poisson", obsdata = obsdata_long)
+#'reshrmsm_gform$results_hrmsm_gform
 
 
 
@@ -109,7 +114,7 @@ trajhrmsm_gform <- function(degree_traj = c("linear","quadratic","cubic"),
       #Predict trajectory groups based on each treatment regime
       obsdataG=data.frame(res)
       obsdataG$gform_group = factor(predict_traj(identifier = "identifier2", total_followup = ntimes_interval,
-                                              treatment = treatment_name, time = "time2",
+                                              treatment = treatment_name, time = "time2", time_values = 1:ntimes_interval,
                                               trajmodel =   restraj$traj_model)$post_class);
       obsdataG$Interv <- i
       list_obsdataG[i] <- list(obsdataG)
@@ -166,7 +171,7 @@ trajhrmsm_gform <- function(degree_traj = c("linear","quadratic","cubic"),
     #Predict trajectory groups based on each treatment regime
     obsdataG=data.frame(res)
     obsdataG$gform_group = factor(predict_traj(identifier = "identifier2", total_followup = ntimes_interval,
-                                           treatment = treatment_name, time = "time2",
+                                           treatment = treatment_name, time = "time2", time_values = 1:ntimes_interval,
                                            trajmodel = restraj$traj_model)$post_class);
     obsdataG$Interv <- i
     list_obsdataG[i] <- list(obsdataG)

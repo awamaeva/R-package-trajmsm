@@ -18,7 +18,7 @@
 #' @param obsdata data in a long format.
 #' @author Awa Diop, Denis Talbot
 #' @export trajhrmsm_ipw
-#' @importFrom sandwich
+#' @import sandwich
 #' @import flexmix
 #' @examples
 #' obsdata_long = gendata(n = 1000, format = "long", total_followup = 8, timedep_outcome = TRUE,  seed = 945)
@@ -29,11 +29,11 @@
 #' paste0(variables, year)})
 #' treatment_var <- paste0("statins", 2011:2018)
 #' var_cov <- c("statins","hyper", "bmi","y")
-#' resipw <- trajhrmsm_ipw(degree_traj = "linear", numerator = "stabilized",
+#' reshrmsm_ipw <- trajhrmsm_ipw(degree_traj = "linear", numerator = "stabilized",
 #' identifier = "id", baseline = baseline_var, covariates = covariates, treatment = treatment_var,
 #' outcome = "y", var_cov= var_cov,include_censor = FALSE, ntimes_interval = 6,total_followup = 8, time = "time", time_values = 2011:2018,
 #' family = "poisson", number_traj = 3, obsdata = obsdata_long, treshold = 0.999)
-#' resipw$res_trajhrmsm_ipw
+#' reshrmsm_ipw$res_trajhrmsm_ipw
 
 
 

@@ -1,11 +1,13 @@
 Package: trajmsm
 Type: Package
 Title: Marginal Structural Models with Latent Class Growth Analysis of Treatment Trajectories
-Version: 0.1.0
-Author: Awa Diop, Denis Talbot
+Version: 0.1.2
+Authors@R: c(
+    person("Awa", "Diop", email = "awa.diop.2@ulaval.ca", role = c("aut", "cre")),
+    person("Denis", "Talbot", role = "aut"))
 Maintainer: Awa Diop <awa.diop.2@ulaval.ca>
-Description: The package trajmsm is based on the paper Marginal Structural Models with Latent Class Growth Analysis of Treatment Trajectories:https://journals.sagepub.com/doi/pdf/10.1177/09622802231202384. 
-License: GPL-3
+Description: Implements marginal structural models combined with latent class growth analysis framework for assessing the causal effect of treatment trajectories. Based on the approach described in "Marginal Structural Models with Latent Class Growth Analysis of Treatment Trajectories" (https://journals.sagepub.com/doi/pdf/10.1177/09622802231202384).
+License: GPL (>= 3)
 Encoding: UTF-8
 Imports: 
     class,
@@ -13,10 +15,13 @@ Imports:
     flexmix,
     geepack,
     ggplot2,
-    survival
+    survival,
+    sandwich
 LazyData: true
 Suggests: 
     knitr,
     rmarkdown
 VignetteBuilder: knitr
 RoxygenNote: 7.2.0
+URL: https://github.com/awamaeva/R-package-trajmsm
+BugReports: https://github.com/awamaeva/R-package-trajmsm/issues 

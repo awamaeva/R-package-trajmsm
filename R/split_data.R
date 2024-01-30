@@ -8,8 +8,13 @@
 #' @param total_followup total length of follow-up.
 #' @param time name of the time variable.
 #' @return \item{all_df}{all subsets, list of time intervals.}
+#' @export
 #' @author Awa Diop Denis Talbot
-#' @examples res = split_data(obsdata = dat.obs, total_followup = 5, s = s, time = "time", identifier = "id")
+#' @examples
+#' obsdata = gendata(n = 1000, format = "long", total_followup = 8, seed = 945)
+#' years <- 2011:2018
+#' res = split_data(obsdata = obsdata, total_followup = 8,
+#' ntimes_interval = 6,time = "time", time_values = years,identifier = "id")
 
 split_data <- function(obsdata,total_followup,ntimes_interval,time,time_values, identifier){
 total_followup = total_followup

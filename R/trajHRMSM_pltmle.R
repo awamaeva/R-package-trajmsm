@@ -8,7 +8,8 @@
 #' @param Rep number of repetitions for the bootstrap.
 #' @param s number of measuring times per interval.
 #' @param K total length of follow-up.
-#' @param time measuring times.
+#' @param time name of the time variable.
+#' @param time_values measuring times.
 #' @param timevar name of the variable time.
 #' @param obsdata observed data in wide format.
 #' @noRd
@@ -33,7 +34,7 @@
 trajhrmsm_pltmle <-  function(degree_traj = c("linear","quadratic","cubic"),
                               treatment,covariates,baseline,outcome, ntimes_interval,
                               total_followup, time, time_values,identifier, var_cov,
-                              number_traj = 3, family = "poisson",obsdata){
+                              number_traj = 3, family = "poisson",obsdata, treshold = 0.99){
 
   nb_sub = total_followup - ntimes_interval + 1
   nregimes = 2^ntimes_interval
@@ -78,7 +79,7 @@ trajhrmsm_pltmle <-  function(degree_traj = c("linear","quadratic","cubic"),
   treatment_names <- sub("\\d+", "", treatment)
   treatment_name <- unique(treatment_names)[1]
   class = factor(predict_traj(identifier = "identifier2", total_followup = ntimes_interval,
-                              treatment = treatment_name, time = "time2",
+                              treatment = treatment_name, time = "time2", time_values = 1:ntimes_interval,
                               trajmodel = restraj$traj_model)$post_class);
 
   if(length(unique(class)) < number_traj){stop("number of trajectory groups identified is inferior to the target number.")}

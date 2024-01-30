@@ -2,29 +2,40 @@
 % Please edit documentation in R/split_data.R
 \name{split_data}
 \alias{split_data}
-\title{Split Observed data into multiple subsets}
+\title{Split observed data into multiple subsets}
 \usage{
-split_data(obsdata, K, s, A, L, Y)
+split_data(
+  obsdata,
+  total_followup,
+  ntimes_interval,
+  time,
+  time_values,
+  identifier
+)
 }
 \arguments{
 \item{obsdata}{observed data in wide format.}
 
-\item{K}{total length of follow-up.}
+\item{total_followup}{total length of follow-up.}
 
-\item{s}{number of measuring times per interval.}
+\item{time}{name of the time variable.}
 
-\item{A}{time-varying treatment.}
+\item{identifier}{identifier of individuals.}
 
-\item{L}{time-varying covariates.}
-
-\item{V}{baseline covariates.}
+\item{ntimes_length}{number of measuring times per interval.}
 }
 \value{
-\item{df}{all subsets, time-intervals.}
+\item{all_df}{all subsets, list of time intervals.}
 }
 \description{
 function to split the data into multiple subsets of size s each
 one corresponding to one time-interval.
+}
+\examples{
+obsdata = gendata(n = 1000, format = "long", total_followup = 8, seed = 945)
+years <- 2011:2018
+res = split_data(obsdata = obsdata, total_followup = 8,
+ntimes_interval = 6,time = "time", time_values = years,identifier = "id")
 }
 \author{
 Awa Diop Denis Talbot
