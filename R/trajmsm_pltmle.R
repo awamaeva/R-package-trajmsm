@@ -7,15 +7,19 @@
 #' @param baseline name of baseline covariates.
 #' @param covariates covariates.
 #' @param treatment time-varying treatment.
+#' @param outcome name of the outcome variable.
 #' @param time name of the time variable.
 #' @param time_values measuring times.
 #' @param total_followup number of measuring times per interval.
 #' @param number_traj an integer to choose the number of trajectory groups.
 #' @param trajmodel trajectory model built with the observed treatment.
+#' @param treshold for weight truncation.
 #' @param obsdata observed data in wide format.
 #' @param ref the reference group.
 #' @importFrom stats na.omit rbinom plogis qlogis  reshape glm
 #' binomial coef as.formula ave aggregate relevel pnorm sd quantile model.matrix
+#' quasibinomial var
+#' @importFrom utils combn
 #' @return Provides estimates of LCGA-MSM obtained using pooled ltlmle.
 #' @export trajmsm_pltmle
 #' @examples

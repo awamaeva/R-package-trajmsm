@@ -29,6 +29,8 @@ trajhrmsm_ipw(
 \arguments{
 \item{degree_traj}{to specify the polynomial degree for modelling the time-varying treatment.}
 
+\item{numerator}{To choose between stabilized and unstabilized weights.}
+
 \item{identifier}{name of the column for unique identifiant.}
 
 \item{baseline}{name of baseline covariates.}
@@ -37,11 +39,17 @@ trajhrmsm_ipw(
 
 \item{treatment}{name of time-varying treatment.}
 
+\item{outcome}{name of the outcome variable.}
+
 \item{var_cov}{names of the time-varying covariates in a long format.}
+
+\item{include_censor}{Logical, if TRUE, includes censoring.}
 
 \item{ntimes_interval}{length of a time-interval (s).}
 
 \item{total_followup}{total length of follow-up.}
+
+\item{time}{name of the time variable.}
 
 \item{time_values}{values of the time variable.}
 
@@ -55,7 +63,7 @@ trajhrmsm_ipw(
 
 \item{weights}{a vector of estimated weights. If NULL, the weights are computed by the function.}
 
-\item{formula}{specification of the model for the outcome to be fitted for a binomial or gaussian distribution.}
+\item{treshold}{for weight truncation.}
 }
 \value{
 A list containing the following components:

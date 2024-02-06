@@ -12,10 +12,9 @@ trajmsm_ipw(
   treatment,
   covariates,
   baseline,
-  number_traj,
   obsdata,
   numerator = "stabilized",
-  include_censor,
+  include_censor = FALSE,
   censor,
   weights = NULL,
   treshold = 0.99
@@ -36,11 +35,13 @@ trajmsm_ipw(
 
 \item{baseline}{Baseline covariates.}
 
-\item{number_traj}{An integer to fix the number of trajectory groups.}
-
 \item{obsdata}{Dataset to be used in the analysis.}
 
 \item{numerator}{Type of weighting ("stabilized" or "unstabilized").}
+
+\item{include_censor}{Logical, if TRUE, includes censoring.}
+
+\item{censor}{name of the censoring variable.}
 
 \item{weights}{A vector of estimated weights. If NULL, the weights are computed by the function \code{IPW}.}
 
@@ -79,7 +80,7 @@ formula = paste0("y ~", paste0(treatment_var,collapse = "+"), "+",
 
 resmsm_ipw = trajmsm_ipw(formula1 = as.formula("y ~ ipw_group"),
            identifier = "id", baseline = baseline_var, covariates = covariates,
-           treatment = treatment_var, number_traj=3, family = "binomial",
-           obsdata = obsdata,numerator = "stabilized", include_censor = FALSE)
+           treatment = treatment_var, family = "binomial",
+           obsdata = obsdata,numerator = "stabilized", include_censor = FALSE, treshold = 0.99)
 resmsm_ipw
 }

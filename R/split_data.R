@@ -4,7 +4,8 @@
 #' @name split_data
 #' @param obsdata observed data in wide format.
 #' @param identifier identifier of individuals.
-#' @param ntimes_length number of measuring times per interval.
+#' @param ntimes_interval number of measuring times per interval.
+#' @param time_values measuring times.
 #' @param total_followup total length of follow-up.
 #' @param time name of the time variable.
 #' @return \item{all_df}{all subsets, list of time intervals.}

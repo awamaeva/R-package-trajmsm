@@ -32,6 +32,8 @@ trajmsm_pltmle(
 
 \item{treatment}{time-varying treatment.}
 
+\item{outcome}{name of the outcome variable.}
+
 \item{number_traj}{an integer to choose the number of trajectory groups.}
 
 \item{total_followup}{number of measuring times per interval.}
@@ -45,6 +47,8 @@ trajmsm_pltmle(
 \item{ref}{the reference group.}
 
 \item{obsdata}{observed data in wide format.}
+
+\item{treshold}{for weight truncation.}
 }
 \value{
 Provides estimates of LCGA-MSM obtained using pooled ltlmle.

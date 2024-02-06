@@ -17,6 +17,8 @@
 #' @param ref the reference trajectory group.
 #' @param obsdata observed data in wide format.
 #' @return Provides estimates of LCGA-MSM obtained using g-formula.
+#' @importFrom stats quasibinomial var
+#' @importFrom utils combn
 #' @export
 #' @examples
 #' obsdata_long = gendata(n = 1000, format = "long", total_followup = 6, seed = 945)
@@ -64,6 +66,7 @@ trajmsm_gform <- function(formula = formula, rep = 50,
   stopifnot(!is.null(trajmodel));
   stopifnot(!is.null(time));
 
+    df <- data.frame()
     bootf=function(df,x=index){
       #Echantillons bootstrap
       df=obsdata[x,];

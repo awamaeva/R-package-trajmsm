@@ -6,11 +6,14 @@
 #' @param baseline name of baseline covariates.
 #' @param covariates covariates.
 #' @param treatment time-varying treatment.
+#' @param outcome name of the outcome variable.
 #' @param time name of the time variable.
 #' @param time_values measuring times.
 #' @param total_followup number of measuring times per interval.
 #' @param ntimes_interval length of a time-interval (s).
+#' @param traj matrix of indicators for trajectory groups.
 #' @param number_traj an integer to choose the number of trajectory groups.
+#' @param treshold for weight truncation.
 #' @param obsdata observed data in wide format.
 #' @returns  \item{list_pltmle_countermeans}{Counterfactual means and influence functions with the pooled ltmle.}
 #' \item{D}{Influence functions}
@@ -106,7 +109,7 @@ pltmle <- function(formula, outcome, treatment, covariates, baseline, ntimes_int
   Hs = do.call(rbind, Hs.all)
 
   # Update the risk for each regime of treatment
-  modEs = glm(as.formula(paste0(outcome, "~", "-1 + offset(qlogis(unlist(Qs))) + Hs")), family = binomial, data = obsdata.all2);;
+  modEs = glm(as.formula(paste0(outcome, "~", "-1 + offset(qlogis(unlist(Qs))) + Hs")), family = binomial, data = obsdata.all2)
 
   coef_Es = ifelse(is.na(coef(modEs)), 0, coef(modEs))
 

@@ -1,24 +1,25 @@
 #' @title History Restricted MSM and Latent Class of Growth Analysis estimated with a Pooled LTMLE.
 #' @description Estimate parameters of LCGA-HRMSM Using a Pooled LTMLE.
 #' @name trajhrmsm_pltmle
-#' @param formula specification of the model for the outcome to be fitted for a binomial or gaussian distribution.
 #' @param family specification of the error distribution and link function to be used in the model.
 #' @param degree_traj to specify the polynomial degree for modelling the time-varying treatment.
 #' @param identifier  name of the column for unique identifiant.
 #' @param baseline name of baseline covariates.
 #' @param covariates names of time-varying covariates in a wide format.
 #' @param treatment name of time-varying treatment.
+#' @param outcome name of the outcome variable.
 #' @param var_cov names of the time-varying covariates in a long format.
 #' @param ntimes_interval length of a time-interval (s).
 #' @param total_followup total length of follow-up.
-#' @param censor name of the censoring variable.
 #' @param number_traj number of trajectory groups.
-#' @param rep number of repetition for the bootstrap.
+#' @param treshold for weight truncation.
 #' @param obsdata data in a long format.
 #' @param time name of the time variable.
 #' @param time_values measuring times.
 #' @importFrom stats na.omit rbinom plogis qlogis  reshape glm
 #' binomial coef as.formula ave aggregate relevel pnorm sd quantile model.matrix
+#' quasibinomial var
+#' @importFrom utils combn
 #' @export
 #' @return A list containing the following components:
 #'   \itemize{
@@ -107,6 +108,7 @@ trajhrmsm_pltmle <-  function(degree_traj = c("linear","quadratic","cubic"),
 
     list_obsdata_pool <- list()
     list_D <- list()
+    df <- data.frame()
 
     for(i in 1:nb_sub){
       #Create the data under all the different regime of treatment

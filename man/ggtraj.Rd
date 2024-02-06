@@ -7,29 +7,25 @@
 ggtraj(traj_data, treatment, time, identifier, class, FUN = mean, ...)
 }
 \arguments{
-\item{traj_data}{Merged datasets containing observed data in long format and trajectory groups.}
+\item{traj_data}{merged datasets containing observed data in long format and trajectory groups.}
 
-\item{treatment}{Name of the time-varying treatment.}
+\item{treatment}{name of the time-varying treatment.}
 
-\item{time}{Name of the variable measurements of time.}
+\item{time}{name of the time variable.}
 
-\item{identifier}{Name of the identifier variable.}
+\item{identifier}{name of the identifier variable.}
 
 \item{class}{Name of the trajectory groups.}
 
-\item{\dots}{Additional arguments to be passed to ggplot functions.}
+\item{FUN}{specify what statistics to display, by default calculate the mean.}
 
-\item{obsdata}{Data to plot trajectory groups.}
-
-\item{fun}{Specify what statistics to display, by default calculate the mean.}
-
-\item{data_post}{Matrix of the posterior probabilities and the trajectory groups.}
+\item{\dots}{additional arguments to be passed to ggplot functions.}
 }
 \value{
-A ggplot object representing the trajectory groups using the observed treatment.
+a ggplot object representing the trajectory groups using the observed treatment.
 }
 \description{
-Use \code{"ggplot2"} to plot trajectory groups produced by the function \code{"build_traj"} using the observed treatment.
+use \code{"ggplot2"} to plot trajectory groups produced by the function \code{"build_traj"} using the observed treatment.
 }
 \examples{
 obsdata_long = gendata(n = 1000, format = "long", total_followup = 12, seed = 945)
@@ -42,8 +38,8 @@ traj_data_long <- merge(obsdata_long, datapost, by = "id")
     Aggtraj_data <- aggregate(AggFormula, data = traj_data_long, FUN = mean)
     Aggtraj_data
 #Aggtraj_data with labels
-traj_data_long[ , "traj_group"] <- factor(ifelse(traj_data_long[ , "class"] == "2" ,"Group3" ,
-ifelse (traj_data_long[ , "class"]== "1" , "Group1" ,"Group2")))
+traj_data_long[ , "traj_group"] <- factor(ifelse(traj_data_long[ , "class"] == "3" ,"Group1" ,
+ifelse (traj_data_long[ , "class"]== "1" , "Group2" ,"Group3")))
 AggFormula <- as.formula(paste("statins", "~", "time", "+", "traj_group"))
 Aggtraj_data <- aggregate(AggFormula, data = traj_data_long, FUN = mean)
 ggtraj(traj_data =  Aggtraj_data,

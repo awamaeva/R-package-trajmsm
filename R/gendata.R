@@ -74,7 +74,6 @@ gendata<- function(n, include_censor = FALSE, format = c("long", "wide"),
 
 
     if (include_censor && format == "long"){
-      obsdata = obsdata_long
       obsdata$censor <- as.vector(censor)
     }
 
@@ -129,7 +128,6 @@ gendata<- function(n, include_censor = FALSE, format = c("long", "wide"),
 
 
       if (include_censor  && format == "long") {
-        obsdata = obsdata_long
         obsdata$censor <- as.vector(censor)
       }
 

@@ -1,20 +1,24 @@
 #' @title History Restricted MSM and Latent Class of Growth Analysis estimated with IPW.
 #' @description Estimate parameters of LCGA-HRMSM Using a Pooled LTMLE.
 #' @name trajhrmsm_ipw
-#' @param formula specification of the model for the outcome to be fitted for a binomial or gaussian distribution.
 #' @param family specification of the error distribution and link function to be used in the model.
+#' @param numerator To choose between stabilized and unstabilized weights.
 #' @param degree_traj to specify the polynomial degree for modelling the time-varying treatment.
 #' @param identifier  name of the column for unique identifiant.
 #' @param baseline name of baseline covariates.
 #' @param covariates names of time-varying covariates in a wide format.
 #' @param treatment name of time-varying treatment.
+#' @param outcome name of the outcome variable.
 #' @param var_cov names of the time-varying covariates in a long format.
 #' @param ntimes_interval length of a time-interval (s).
 #' @param total_followup total length of follow-up.
 #' @param censor name of the censoring variable.
+#' @param include_censor Logical, if TRUE, includes censoring.
 #' @param number_traj number of trajectory groups.
 #' @param weights a vector of estimated weights. If NULL, the weights are computed by the function.
 #' @param time_values values of the time variable.
+#' @param time name of the time variable.
+#' @param treshold for weight truncation.
 #' @param obsdata data in a long format.
 #' @return A list containing the following components:
 #'   \itemize{
@@ -24,11 +28,11 @@
 #'   \item{mean_adh}{Mean adherence per trajectory group.}
 #'   }
 #' @author Awa Diop, Denis Talbot
+#' @import sandwich
+#' @import flexmix
 #' @importFrom stats na.omit rbinom plogis qlogis  reshape glm
 #' binomial coef as.formula ave aggregate relevel pnorm sd quantile model.matrix
 #' @export trajhrmsm_ipw
-#' @import sandwich
-#' @import flexmix
 #' @examples
 #' obsdata_long = gendata(n = 1000, format = "long", total_followup = 8,
 #' timedep_outcome = TRUE,  seed = 945)
@@ -83,7 +87,7 @@ trajhrmsm_ipw <- function(degree_traj = c("linear","quadratic","cubic"),
 
   treatment_names <- sub("\\d+", "", treatment)
   treatment_name <- unique(treatment_names)[1]
-  #Choice of degree for the polynomial form to buil the trajectory groups
+  #Choice of degree for the polynomial form to build the trajectory groups
   if(degree_traj == "linear"){
 
   restraj = build_traj(obsdata  = na.omit(dat_sub[,c(treatment_name,"time2","identifier2")]),
@@ -119,7 +123,7 @@ trajhrmsm_ipw <- function(degree_traj = c("linear","quadratic","cubic"),
     dat_final[ ,"ipw_group"] <- relevel(factor(dat_final[ ,"ipw_group"]), ref = ref)
 
 
-    mod_glm = glm(formula =as.formula(paste(outcome, "~ factor(ipw_group) + factor(Interv)")), weights = IPW,family = family,data=dat_final);
+    mod_glm = glm(formula =as.formula(paste(outcome, "~ factor(ipw_group) + factor(Interv)")), weights = dat_final[,"IPW"],family = family,data=dat_final);
     coefs <- summary(mod_glm)$coefficients[1:number_traj,1];
     se   <- sqrt(diag(vcovCL(mod_glm, cluster = cluster_formula)))[1:number_traj];
     pvalue <- round(coef(summary(mod_glm))[1:number_traj,4],4)

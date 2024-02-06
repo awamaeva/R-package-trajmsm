@@ -8,16 +8,17 @@
 #' @param treatment Time-varying treatment.
 #' @param baseline Baseline covariates.
 #' @param covariates Time-varying covariates.
-#' @param number_traj An integer to fix the number of trajectory groups.
 #' @param obsdata Dataset to be used in the analysis.
 #' @param numerator Type of weighting ("stabilized" or "unstabilized").
 #' @param weights A vector of estimated weights. If NULL, the weights are computed by the function \code{IPW}.
+#' @param censor name of the censoring variable.
+#' @param include_censor Logical, if TRUE, includes censoring.
 #' @param treshold For weight truncation.
 #' @return Provides estimates of LCGA-MSM obtained using the ipw function.
 #' @export trajmsm_ipw
 #' @import sandwich
 #' @importFrom survival coxph
-#' @import flexmix
+#' @import flexmix geepack
 #' @importFrom stats na.omit rbinom plogis qlogis  reshape glm
 #' binomial coef as.formula ave aggregate relevel pnorm sd quantile model.matrix
 #' @return Provides estimates of LCGA-MSM obtained using IPW.
@@ -46,20 +47,20 @@
 #'
 #'resmsm_ipw = trajmsm_ipw(formula1 = as.formula("y ~ ipw_group"),
 #'            identifier = "id", baseline = baseline_var, covariates = covariates,
-#'            treatment = treatment_var, number_traj=3, family = "binomial",
-#'            obsdata = obsdata,numerator = "stabilized", include_censor = FALSE)
+#'            treatment = treatment_var, family = "binomial",
+#'            obsdata = obsdata,numerator = "stabilized", include_censor = FALSE, treshold = 0.99)
 #'resmsm_ipw
 
 
 trajmsm_ipw <- function(formula1, formula2, family, identifier, treatment, covariates,
-                         baseline, number_traj, obsdata,
-                         numerator = "stabilized",include_censor, censor, weights = NULL, treshold = 0.99) {
+                        baseline, obsdata,
+                        numerator = "stabilized",include_censor = FALSE, censor, weights = NULL, treshold = 0.99) {
 
   # Compute weights if not provided
   if (is.null(weights)) {
-    weights <- inverse_probability_weighting(identifier = identifier, covariates = covariates,
+    weights <- inverse_probability_weighting(identifier = as.character(identifier), covariates = covariates,
                                              treatment = treatment, baseline = baseline,
-                                              numerator = numerator,
+                                             numerator = numerator,
                                              include_censor = include_censor, censor = censor,obsdata = obsdata)[[1]][, length(treatment)]
 
     obsdata$weights <- ifelse(quantile(weights, treshold, na.rm = TRUE)> weights, quantile(weights, treshold, na.rm = TRUE), weights)
@@ -68,26 +69,40 @@ trajmsm_ipw <- function(formula1, formula2, family, identifier, treatment, covar
   }
 
   # Model fitting
-  cluster_formula <- as.formula(paste0("~", identifier))
-  if (family == "gaussian") {
-    mod_glm <- glm(formula1, data = obsdata, weights = weights, family = gaussian)
-  } else if (family == "binomial") {
-    mod_glm <- glm(formula1, data = obsdata, weights = weights, family = binomial)
-  } else if (family == "survival") {
-    mod_glm <- coxph(formula2, data = obsdata,cluster = get(identifier), weights = weights)
+  if (family == "survival") {
+    # Prepare the list of arguments for coxph
+    args_list <- list(
+      formula = formula2,
+      data = obsdata,
+      cluster = as.formula(paste0("~", identifier)), # Dynamically construct cluster formula
+      weights = weights
+    )
+
+    # Use do.call to invoke coxph with dynamically constructed arguments
+    mod_glm <- do.call("coxph", args_list)
+  } else {
+    # Prepare the list of arguments for geeglm
+    args_list <- list(
+      formula = formula1,
+      data = obsdata,
+      weights = weights,
+      id = obsdata[[identifier]], # Access the ID column directly from the data frame
+      family = family
+    )
+
+    # Use do.call to invoke geeglm with dynamically constructed arguments
+    mod_glm <- do.call("geeglm", args_list)
   }
 
   # Extracting model results
   coefs <- coef(summary(mod_glm))[, 1]
-  se <- sqrt(diag(vcovCL(mod_glm, cluster = cluster_formula)))
-  pvalue <- coef(summary(mod_glm))[,4]
+  se <- coef(summary(mod_glm))[, 2]
+  pvalue <- 2*pnorm(-abs(coefs)/se)
   ic_lo <- coefs - 1.96 * se
   ic_up <- coefs + 1.96 * se
 
-  res_trajmsm <- cbind(coefs, se, pvalue, ic_lo, ic_up)
-  colnames(res_trajmsm) <- c("Estimate", "Std.Error", "Pvalue", "Lower CI", "Upper CI")
+  restrajmsm_ipw <- cbind(coefs, se, pvalue, ic_lo, ic_up)
+  colnames(restrajmsm_ipw) <- c("Estimate", "Std.Error", "Pvalue", "Lower CI", "Upper CI")
 
-  return(res_trajmsm)
+  return(restrajmsm_ipw)
 }
-
-

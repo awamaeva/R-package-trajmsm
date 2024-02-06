@@ -2,17 +2,16 @@
 #' @description Estimate parameters of LCGA-HRMSM Using g-formula.
 #'  and bootstrap to get standard errors.
 #' @name trajhrmsm_gform
-#' @param formula specification of the model for the outcome to be fitted for a binomial or gaussian distribution.
 #' @param family specification of the error distribution and link function to be used in the model.
 #' @param degree_traj to specify the polynomial degree for modelling the time-varying treatment.
 #' @param identifier  name of the column for unique identifiant.
 #' @param baseline name of baseline covariates.
 #' @param covariates names of time-varying covariates in a wide format.
 #' @param treatment name of time-varying treatment.
+#' @param outcome name of the outcome variable.
 #' @param var_cov names of the time-varying covariates in a long format.
 #' @param ntimes_interval length of a time-interval (s).
 #' @param total_followup total length of follow-up.
-#' @param censor name of the censoring variable.
 #' @param number_traj number of trajectory groups.
 #' @param rep number of repetition for the bootstrap.
 #' @param obsdata data in a long format.
@@ -27,6 +26,8 @@
 #'   }
 #' @importFrom stats na.omit rbinom plogis qlogis  reshape glm
 #' binomial coef as.formula ave aggregate relevel pnorm sd quantile model.matrix
+#' quasibinomial var
+#' @importFrom utils combn
 #' @export
 #' @author Awa Diop Denis Talbot
 #' @examples

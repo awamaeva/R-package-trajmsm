@@ -24,6 +24,8 @@ pltmle(
 \arguments{
 \item{formula}{specification of the model for the outcome to be fitted.}
 
+\item{outcome}{name of the outcome variable.}
+
 \item{treatment}{time-varying treatment.}
 
 \item{covariates}{covariates.}
@@ -42,7 +44,11 @@ pltmle(
 
 \item{obsdata}{observed data in wide format.}
 
+\item{traj}{matrix of indicators for trajectory groups.}
+
 \item{total_followup}{number of measuring times per interval.}
+
+\item{treshold}{for weight truncation.}
 }
 \value{
 \item{list_pltmle_countermeans}{Counterfactual means and influence functions with the pooled ltmle.}

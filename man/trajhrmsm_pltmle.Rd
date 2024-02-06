@@ -31,6 +31,8 @@ trajhrmsm_pltmle(
 
 \item{baseline}{name of baseline covariates.}
 
+\item{outcome}{name of the outcome variable.}
+
 \item{ntimes_interval}{length of a time-interval (s).}
 
 \item{total_followup}{total length of follow-up.}
@@ -49,11 +51,7 @@ trajhrmsm_pltmle(
 
 \item{obsdata}{data in a long format.}
 
-\item{formula}{specification of the model for the outcome to be fitted for a binomial or gaussian distribution.}
-
-\item{censor}{name of the censoring variable.}
-
-\item{rep}{number of repetition for the bootstrap.}
+\item{treshold}{for weight truncation.}
 }
 \value{
 A list containing the following components:

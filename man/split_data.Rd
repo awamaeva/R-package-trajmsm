@@ -18,11 +18,13 @@ split_data(
 
 \item{total_followup}{total length of follow-up.}
 
+\item{ntimes_interval}{number of measuring times per interval.}
+
 \item{time}{name of the time variable.}
 
-\item{identifier}{identifier of individuals.}
+\item{time_values}{measuring times.}
 
-\item{ntimes_length}{number of measuring times per interval.}
+\item{identifier}{identifier of individuals.}
 }
 \value{
 \item{all_df}{all subsets, list of time intervals.}

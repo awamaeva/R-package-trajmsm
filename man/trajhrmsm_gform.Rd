@@ -33,6 +33,8 @@ trajhrmsm_gform(
 
 \item{baseline}{name of baseline covariates.}
 
+\item{outcome}{name of the outcome variable.}
+
 \item{ntimes_interval}{length of a time-interval (s).}
 
 \item{total_followup}{total length of follow-up.}
@@ -50,10 +52,6 @@ trajhrmsm_gform(
 \item{family}{specification of the error distribution and link function to be used in the model.}
 
 \item{obsdata}{data in a long format.}
-
-\item{formula}{specification of the model for the outcome to be fitted for a binomial or gaussian distribution.}
-
-\item{censor}{name of the censoring variable.}
 }
 \value{
 A list containing the following components:

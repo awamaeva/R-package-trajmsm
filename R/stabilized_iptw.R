@@ -9,7 +9,6 @@
 #' @return Stabilized inverse of treatment probabilities
 #' @keywords internal
 #' @noRd
-#' @export
 #' @note This function requires data in a wide format.
 #' @author Awa Diop, Denis Talbot
 #' @examples
@@ -55,6 +54,7 @@ stabilized_iptw <- function(identifier, treatment, covariates, baseline, obsdata
 
   first_time_covariates <- paste0(covariates[grep("1", covariates)], collapse = "+")
   form_num_t1 <- as.formula(paste0(treatment[1], "~ 1"))
+
   form_denom_t1 <- as.formula(paste0(treatment[1], "~", paste0(unlist(covariates[1]),collapse = "+"), "+", paste0(baseline, collapse = "+")))
 
   fit_num_t1 <- glm(form_num_t1, family = binomial(link = "logit"), data = obsdata)
