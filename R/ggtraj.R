@@ -1,16 +1,17 @@
 #' @title ggplot Trajectory
-#' @description use \code{"ggplot2"} to plot trajectory groups produced by the function \code{"build_traj"} using the observed treatment.
-#' @param treatment name of the time-varying treatment.
-#' @param time name of the time variable.
-#' @param identifier name of the identifier variable.
+#' @description Use \code{"ggplot2"} to plot trajectory groups produced by the function \code{"build_traj"} using the observed treatment.
+#' @param treatment Name of the time-varying treatment.
+#' @param time Name of the time variable.
+#' @param identifier Name of the identifier variable.
 #' @param class Name of the trajectory groups.
-#' @param FUN specify what statistics to display, by default calculate the mean.
-#' @param traj_data merged datasets containing observed data in long format and trajectory groups.
-#' @param \dots additional arguments to be passed to ggplot functions.
-#' @return a ggplot object representing the trajectory groups using the observed treatment.
+#' @param FUN Specify which statistics to display, by default calculate the mean.
+#' @param traj_data Merged datasets containing observed data in long format and trajectory groups.
+#' @param \dots Additional arguments to be passed to ggplot functions.
+#' @return A ggplot object representing the trajectory groups using the observed treatment.
 #' @import ggplot2 flexmix
 #' @export ggtraj
 #' @examples
+#' \donttest{
 #' obsdata_long = gendata(n = 1000, format = "long", total_followup = 12, seed = 945)
 #' restraj = build_traj(obsdata = obsdata_long, number_traj = 3,
 #' formula = as.formula(cbind(statins, 1 - statins) ~ time), identifier = "id")
@@ -27,6 +28,9 @@
 #' Aggtraj_data <- aggregate(AggFormula, data = traj_data_long, FUN = mean)
 #' ggtraj(traj_data =  Aggtraj_data,
 #' treatment = "statins",time= "time",identifier="id",class = "traj_group", FUN = mean)
+#' }
+
+
 
 ggtraj <- function(traj_data, treatment, time, identifier, class, FUN = mean, ...) {
 

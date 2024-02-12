@@ -1,28 +1,29 @@
 #' @title Pooled LTMLE
-#' @description function to estimate parameters of a MSM-LCGA using pooled LTMLE
+#' @description Estimate parameters of LCGA-MSM using pooled LTMLE
 #'  with influence functions to estimate standard errors.
 #' @name trajmsm_pltmle
-#' @param formula specification of the model for the outcome to be fitted.
-#' @param identifier  name of the column for unique identifiant.
-#' @param baseline name of baseline covariates.
-#' @param covariates covariates.
-#' @param treatment time-varying treatment.
-#' @param outcome name of the outcome variable.
-#' @param time name of the time variable.
-#' @param time_values measuring times.
-#' @param total_followup number of measuring times per interval.
-#' @param number_traj an integer to choose the number of trajectory groups.
-#' @param trajmodel trajectory model built with the observed treatment.
-#' @param treshold for weight truncation.
-#' @param obsdata observed data in wide format.
-#' @param ref the reference group.
+#' @param formula Specification of the model for the outcome to be fitted.
+#' @param identifier  Name of the column for unique identifiant.
+#' @param baseline Names of the baseline covariates.
+#' @param covariates Names of the time-varying covariates (should be a list).
+#' @param treatment Name of the time-varying treatment.
+#' @param outcome Name of the outcome variable.
+#' @param time Name of the time variable.
+#' @param time_values Measuring times.
+#' @param total_followup Total length of follow-up.
+#' @param number_traj An integer to choose the number of trajectory groups.
+#' @param trajmodel Trajectory model built with the observed treatment.
+#' @param treshold For weight truncation.
+#' @param obsdata Observed data in wide format.
+#' @param ref The reference group.
 #' @importFrom stats na.omit rbinom plogis qlogis  reshape glm
 #' binomial coef as.formula ave aggregate relevel pnorm sd quantile model.matrix
 #' quasibinomial var
 #' @importFrom utils combn
-#' @return Provides estimates of LCGA-MSM obtained using pooled ltlmle.
+#' @return Provides a matrix of estimates for LCGA-MSM, obtained using the pooled ltlmle method.
 #' @export trajmsm_pltmle
 #' @examples
+#' \donttest{
 #' obsdata_long = gendata(n = 1000, format = "long", total_followup = 6, seed = 945)
 #' years <- 2011:2016
 #' baseline_var <- c("age","sex")
@@ -48,6 +49,7 @@
 #'  time = "time", time_values = years, number_traj = 3, total_followup = 6,
 #'  trajmodel = restraj$traj_model, ref = "1", obsdata = trajmsm_wide, treshold = 0.99)
 #'  resmsm_pltmle
+#'  }
 #' @return \item{results_msm_pooledltmle}{Estimates of a LCGA-MSM with pooled LTMLE.}
 #' @author Awa Diop, Denis Talbot
 

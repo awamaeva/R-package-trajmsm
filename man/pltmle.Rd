@@ -22,42 +22,43 @@ pltmle(
 )
 }
 \arguments{
-\item{formula}{specification of the model for the outcome to be fitted.}
+\item{formula}{Specification of the model for the outcome to be fitted.}
 
-\item{outcome}{name of the outcome variable.}
+\item{outcome}{Name of the outcome variable.}
 
-\item{treatment}{time-varying treatment.}
+\item{treatment}{Time-varying treatment.}
 
-\item{covariates}{covariates.}
+\item{covariates}{Covariates.}
 
-\item{baseline}{name of baseline covariates.}
+\item{baseline}{Name of baseline covariates.}
 
-\item{ntimes_interval}{length of a time-interval (s).}
+\item{ntimes_interval}{Length of a time-interval (s).}
 
-\item{number_traj}{an integer to choose the number of trajectory groups.}
+\item{number_traj}{An integer to choose the number of trajectory groups.}
 
-\item{time}{name of the time variable.}
+\item{time}{Name of the time variable.}
 
-\item{time_values}{measuring times.}
+\item{time_values}{Measuring times.}
 
-\item{identifier}{name of the column for unique identifiant.}
+\item{identifier}{Name of the column of the unique identifier.}
 
-\item{obsdata}{observed data in wide format.}
+\item{obsdata}{Observed data in wide format.}
 
-\item{traj}{matrix of indicators for trajectory groups.}
+\item{traj}{Matrix of indicators for the trajectory groups.}
 
-\item{total_followup}{number of measuring times per interval.}
+\item{total_followup}{Number of measuring times per interval.}
 
-\item{treshold}{for weight truncation.}
+\item{treshold}{For weight truncation.}
 }
 \value{
 \item{list_pltmle_countermeans}{Counterfactual means and influence functions with the pooled ltmle.}
 \item{D}{Influence functions}
 }
 \description{
-function to estimate counterfactual means for a pooled LTMLE.
+Function to estimate counterfactual means for a pooled LTMLE.
 }
 \examples{
+\donttest{
 obsdata_long = gendata(n = 2000, format = "long",total_followup = 3, seed = 945)
 baseline_var <- c("age","sex")
 covariates <- list(c("hyper2011", "bmi2011"),
@@ -88,6 +89,7 @@ covariates = covariates, baseline = baseline_var, ntimes_interval = 3, number_tr
  time =  "time",time_values = time_values,identifier = "id",obsdata = obsdata,
 traj=traj, treshold = 0.99)
 res_pltmle$counter_means
+}
 }
 \author{
 Awa Diop, Denis Talbot

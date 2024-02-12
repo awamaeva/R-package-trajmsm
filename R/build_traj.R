@@ -1,5 +1,5 @@
-#' @title Wrapper of flexmix
-#' @description Call the package flexmix to construct trajectory groups
+#' @title Wrapper for flexmix
+#' @description Call the package flexmix to build trajectory groups
 #' @name build_traj
 #' @param obsdata Data to build trajectory groups in long format.
 #' @param number_traj An integer to fix the number of trajectory groups.

@@ -1,25 +1,26 @@
 #' @title Counterfactual means for a Pooled LTMLE
-#' @description function to estimate counterfactual means for a pooled LTMLE.
+#' @description Function to estimate counterfactual means for a pooled LTMLE.
 #' @name pltmle
-#' @param formula specification of the model for the outcome to be fitted.
-#' @param identifier  name of the column for unique identifiant.
-#' @param baseline name of baseline covariates.
-#' @param covariates covariates.
-#' @param treatment time-varying treatment.
-#' @param outcome name of the outcome variable.
-#' @param time name of the time variable.
-#' @param time_values measuring times.
-#' @param total_followup number of measuring times per interval.
-#' @param ntimes_interval length of a time-interval (s).
-#' @param traj matrix of indicators for trajectory groups.
-#' @param number_traj an integer to choose the number of trajectory groups.
-#' @param treshold for weight truncation.
-#' @param obsdata observed data in wide format.
+#' @param formula Specification of the model for the outcome to be fitted.
+#' @param identifier  Name of the column of the unique identifier.
+#' @param baseline Name of baseline covariates.
+#' @param covariates Covariates.
+#' @param treatment Time-varying treatment.
+#' @param outcome Name of the outcome variable.
+#' @param time Name of the time variable.
+#' @param time_values Measuring times.
+#' @param total_followup Number of measuring times per interval.
+#' @param ntimes_interval Length of a time-interval (s).
+#' @param traj Matrix of indicators for the trajectory groups.
+#' @param number_traj An integer to choose the number of trajectory groups.
+#' @param treshold For weight truncation.
+#' @param obsdata Observed data in wide format.
 #' @returns  \item{list_pltmle_countermeans}{Counterfactual means and influence functions with the pooled ltmle.}
 #' \item{D}{Influence functions}
 #' @import e1071
 #' @export
 #' @examples
+#' \donttest{
 #' obsdata_long = gendata(n = 2000, format = "long",total_followup = 3, seed = 945)
 #' baseline_var <- c("age","sex")
 #' covariates <- list(c("hyper2011", "bmi2011"),
@@ -50,6 +51,7 @@
 #'  time =  "time",time_values = time_values,identifier = "id",obsdata = obsdata,
 #' traj=traj, treshold = 0.99)
 #' res_pltmle$counter_means
+#' }
 #' @author Awa Diop, Denis Talbot
 
 

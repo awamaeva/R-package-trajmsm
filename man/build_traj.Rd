@@ -2,7 +2,7 @@
 % Please edit documentation in R/build_traj.R
 \name{build_traj}
 \alias{build_traj}
-\title{Wrapper of flexmix}
+\title{Wrapper for flexmix}
 \usage{
 build_traj(
   obsdata,
@@ -36,7 +36,7 @@ build_traj(
 A list containing the posterior probability matrix and the fitted trajectory model.
 }
 \description{
-Call the package flexmix to construct trajectory groups
+Call the package flexmix to build trajectory groups
 }
 \examples{
 obsdata_long = gendata(n = 1000,format = "long", total_followup = 6, seed = 945)

@@ -27,13 +27,13 @@ trajmsm_ipw(
 
 \item{family}{Specification of the error distribution and link function to be used in the model.}
 
-\item{identifier}{Name of the column for unique identification.}
+\item{identifier}{Name of the column of the unique identifier.}
 
 \item{treatment}{Time-varying treatment.}
 
-\item{covariates}{Time-varying covariates.}
+\item{covariates}{Names of the time-varying covariates (should be a list).}
 
-\item{baseline}{Baseline covariates.}
+\item{baseline}{Name of the baseline covariates.}
 
 \item{obsdata}{Dataset to be used in the analysis.}
 
@@ -41,7 +41,7 @@ trajmsm_ipw(
 
 \item{include_censor}{Logical, if TRUE, includes censoring.}
 
-\item{censor}{name of the censoring variable.}
+\item{censor}{Name of the censoring variable.}
 
 \item{weights}{A vector of estimated weights. If NULL, the weights are computed by the function \code{IPW}.}
 
@@ -50,10 +50,10 @@ trajmsm_ipw(
 \value{
 Provides estimates of LCGA-MSM obtained using the ipw function.
 
-Provides estimates of LCGA-MSM obtained using IPW.
+Provides a matrix of estimates for LCGA-MSM, obtained using IPW.
 }
 \description{
-Combine Marginal Structural Model and Latent Class of Growth Analysis
+Estimate parameters of LCGA-MSM using IPW.
 }
 \examples{
 obsdata_long = gendata(n = 1000, format = "long", total_followup = 6, seed = 945)

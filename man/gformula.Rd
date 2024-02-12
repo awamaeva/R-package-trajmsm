@@ -2,7 +2,7 @@
 % Please edit documentation in R/gformula.R
 \name{gformula}
 \alias{gformula}
-\title{Counterfactual Means via G-Formula}
+\title{Counterfactual means via G-Formula}
 \usage{
 gformula(
   formula,
@@ -15,27 +15,28 @@ gformula(
 )
 }
 \arguments{
-\item{formula}{specification of the model for the outcome to be fitted.}
+\item{formula}{Specification of the model for the outcome to be fitted.}
 
-\item{baseline}{name of the baseline covariates.}
+\item{baseline}{Names of the baseline covariates.}
 
-\item{covariates}{list of the names of the time-varying covariates.}
+\item{covariates}{Names of the time-varying covariates (should be a list).}
 
-\item{treatment}{name of the time-varying treatment.}
+\item{treatment}{Names of the time-varying treatment.}
 
-\item{outcome}{name of the outcome variable.}
+\item{outcome}{Name of the outcome variable.}
 
-\item{ntimes_interval}{length of a time-interval (s).}
+\item{ntimes_interval}{Length of a time-interval (s).}
 
-\item{obsdata}{observed data in wide format.}
+\item{obsdata}{Observed data in wide format.}
 }
 \value{
-\item{list_gform_countermeans}{Counterfactual means obtained with g-formula.}
+\item{list_gform_countermeans}{ List of counterfactual means obtained with g-formula.}
 }
 \description{
 Calculates counterfactual means using the g-formula approach.
 }
 \examples{
+\donttest{
 obsdata = gendata(n = 1000, format = "wide", total_followup = 6, seed = 945)
 years <- 2011:2016
 baseline_var <- c("age","sex")
@@ -49,6 +50,7 @@ formula = paste0("y ~", paste0(treatment_var,collapse = "+"), "+",
                 paste0(baseline_var, collapse = "+"))
 res_gform <- gformula(formula = formula, baseline = baseline_var, covariates = covariates,
 treatment = treatment_var, outcome = "y", ntimes_interval = 6, obsdata =   obsdata )
+}
 }
 \author{
 Awa Diop, Denis Talbot

@@ -14,17 +14,20 @@ predict_traj(
 )
 }
 \arguments{
-\item{identifier}{Name of the column for unique identifier.}
+\item{identifier}{Name of the column of the unique identifier.}
 
 \item{total_followup}{Number of measuring times.}
 
 \item{treatment}{Name of the time-varying treatment.}
 
-\item{time}{name of the variable time.}
+\item{time}{Name of the variable time.}
 
-\item{time_values}{values of the time variable.}
+\item{time_values}{Values of the time variable.}
 
 \item{trajmodel}{Trajectory model built with the observed treatment.}
+}
+\value{
+A data.frame with the posterior probabilities.
 }
 \description{
 Function to predict trajectory groups for deterministic treatment regimes

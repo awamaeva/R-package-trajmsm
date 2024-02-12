@@ -22,6 +22,7 @@
 #' baseline = baseline_var,obsdata = obsdata)
 #' summary(stabilized_weights[[1]])
 
+
 stabilized_iptw <- function(identifier, treatment, covariates, baseline, obsdata) {
   if (!is.data.frame(obsdata)) {
     stop("obsdata needs to be a data frame")

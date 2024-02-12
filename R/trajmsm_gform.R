@@ -1,26 +1,27 @@
 #' @title Parametric g-formula
-#' @description function to estimate parameters of a MSM-LCGA using g-formula
+#' @description Estimate parameters of LCGA-MSM using g-formula
 #'  and bootstrap to get standard errors.
 #' @name trajmsm_gform
-#' @param formula specification of the model for the outcome to be fitted.
-#' @param identifier name of the column for unique identifiant.
-#' @param baseline  vector of names of the baseline covariates.
-#' @param covariates list of names of the time-varying covariates.
-#' @param treatment vector of names of the time-varying treatment.
-#' @param outcome name of the outcome of interest.
-#' @param total_followup of measuring times.
-#' @param time name of the time variable.
-#' @param time_values measuring times.
-#' @param rep number of repetitions for the bootstrap.
-#' @param trajmodel trajectory model built with the observed treatment.
-#' @param var_cov names of the time-varying covariates in a long format.
-#' @param ref the reference trajectory group.
-#' @param obsdata observed data in wide format.
-#' @return Provides estimates of LCGA-MSM obtained using g-formula.
+#' @param formula Specification of the model for the outcome to be fitted.
+#' @param identifier Name of the column of the unique identifier.
+#' @param baseline  Vector of names of the baseline covariates.
+#' @param covariates List of names of the time-varying covariates.
+#' @param treatment Vector of names of the time-varying treatment.
+#' @param outcome Name of the outcome of interest.
+#' @param total_followup Total length of follow-up.
+#' @param time Name of the time variable.
+#' @param time_values Measuring times.
+#' @param rep Number of repetitions for the bootstrap.
+#' @param trajmodel Trajectory model built with the observed treatment.
+#' @param var_cov Names of the time-varying covariates.
+#' @param ref The reference trajectory group.
+#' @param obsdata Observed data in wide format.
+#' @return Provides a matrix of estimates for LCGA-MSM, obtained using the g-formula method.
 #' @importFrom stats quasibinomial var
 #' @importFrom utils combn
 #' @export
 #' @examples
+#' \donttest{
 #' obsdata_long = gendata(n = 1000, format = "long", total_followup = 6, seed = 945)
 #' years <- 2011:2016
 #' baseline_var <- c("age","sex")
@@ -47,6 +48,7 @@
 #'treatment = treatment_var, outcome = "y", total_followup = 6,time = "time",
 #' time_values = years, trajmodel = restraj$traj_model,ref = "1", obsdata =   obsdata )
 #' resmsm_gform
+#' }
 #' @author Awa Diop Denis Talbot
 
 trajmsm_gform <- function(formula = formula, rep = 50,
@@ -94,7 +96,6 @@ trajmsm_gform <- function(formula = formula, rep = 50,
     for(b in 1:rep){
       index <- sample(1:nrow(obsdata), nrow(obsdata) ,replace = T)
       list_res[b] <- list(bootf(df,x = index))
-      cat('Replication', b, 'of', rep,'\n')
     }
 
     result.coef.boot <- do.call(rbind,list_res)

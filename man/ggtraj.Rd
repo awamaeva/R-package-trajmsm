@@ -7,27 +7,28 @@
 ggtraj(traj_data, treatment, time, identifier, class, FUN = mean, ...)
 }
 \arguments{
-\item{traj_data}{merged datasets containing observed data in long format and trajectory groups.}
+\item{traj_data}{Merged datasets containing observed data in long format and trajectory groups.}
 
-\item{treatment}{name of the time-varying treatment.}
+\item{treatment}{Name of the time-varying treatment.}
 
-\item{time}{name of the time variable.}
+\item{time}{Name of the time variable.}
 
-\item{identifier}{name of the identifier variable.}
+\item{identifier}{Name of the identifier variable.}
 
 \item{class}{Name of the trajectory groups.}
 
-\item{FUN}{specify what statistics to display, by default calculate the mean.}
+\item{FUN}{Specify which statistics to display, by default calculate the mean.}
 
-\item{\dots}{additional arguments to be passed to ggplot functions.}
+\item{\dots}{Additional arguments to be passed to ggplot functions.}
 }
 \value{
-a ggplot object representing the trajectory groups using the observed treatment.
+A ggplot object representing the trajectory groups using the observed treatment.
 }
 \description{
-use \code{"ggplot2"} to plot trajectory groups produced by the function \code{"build_traj"} using the observed treatment.
+Use \code{"ggplot2"} to plot trajectory groups produced by the function \code{"build_traj"} using the observed treatment.
 }
 \examples{
+\donttest{
 obsdata_long = gendata(n = 1000, format = "long", total_followup = 12, seed = 945)
 restraj = build_traj(obsdata = obsdata_long, number_traj = 3,
 formula = as.formula(cbind(statins, 1 - statins) ~ time), identifier = "id")
@@ -44,4 +45,5 @@ AggFormula <- as.formula(paste("statins", "~", "time", "+", "traj_group"))
 Aggtraj_data <- aggregate(AggFormula, data = traj_data_long, FUN = mean)
 ggtraj(traj_data =  Aggtraj_data,
 treatment = "statins",time= "time",identifier="id",class = "traj_group", FUN = mean)
+}
 }

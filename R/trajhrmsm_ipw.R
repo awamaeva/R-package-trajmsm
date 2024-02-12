@@ -1,32 +1,26 @@
 #' @title History Restricted MSM and Latent Class of Growth Analysis estimated with IPW.
-#' @description Estimate parameters of LCGA-HRMSM Using a Pooled LTMLE.
+#' @description Estimate parameters of LCGA-HRMSM using IPW.
 #' @name trajhrmsm_ipw
 #' @param family specification of the error distribution and link function to be used in the model.
 #' @param numerator To choose between stabilized and unstabilized weights.
-#' @param degree_traj to specify the polynomial degree for modelling the time-varying treatment.
-#' @param identifier  name of the column for unique identifiant.
-#' @param baseline name of baseline covariates.
-#' @param covariates names of time-varying covariates in a wide format.
-#' @param treatment name of time-varying treatment.
-#' @param outcome name of the outcome variable.
-#' @param var_cov names of the time-varying covariates in a long format.
-#' @param ntimes_interval length of a time-interval (s).
-#' @param total_followup total length of follow-up.
-#' @param censor name of the censoring variable.
+#' @param degree_traj To specify the polynomial degree for modelling the time-varying treatment.
+#' @param identifier  Name of the column of the unique identifier.
+#' @param baseline Names of the baseline covariates.
+#' @param covariates Names of the time-varying covariates (should be a list).
+#' @param treatment Name of the time-varying treatment.
+#' @param outcome Name of the outcome variable.
+#' @param var_cov Names of the time-varying covariates.
+#' @param ntimes_interval Length of a time-interval (s).
+#' @param total_followup Total length of follow-up.
+#' @param censor Name of the censoring variable.
 #' @param include_censor Logical, if TRUE, includes censoring.
-#' @param number_traj number of trajectory groups.
-#' @param weights a vector of estimated weights. If NULL, the weights are computed by the function.
-#' @param time_values values of the time variable.
-#' @param time name of the time variable.
-#' @param treshold for weight truncation.
-#' @param obsdata data in a long format.
-#' @return A list containing the following components:
-#'   \itemize{
-#'   \item{results_hrmsm_ipw}{Estimates of LCGA-HRMSM.}
-#'   \item{result_coef_boot}{Estimates obtained with bootstrap.}
-#'   \item{restraj}{Fitted trajectory model.}
-#'   \item{mean_adh}{Mean adherence per trajectory group.}
-#'   }
+#' @param number_traj Number of trajectory groups.
+#' @param weights A vector of estimated weights. If NULL, the weights are computed by the function.
+#' @param time_values Values of the time variable.
+#' @param time Name of the time variable.
+#' @param treshold For weight truncation.
+#' @param obsdata Data in a long format.
+#' @return Provides a matrix of estimates for LCGA-HRMSM, obtained using IPW.
 #' @author Awa Diop, Denis Talbot
 #' @import sandwich
 #' @import flexmix
@@ -34,6 +28,7 @@
 #' binomial coef as.formula ave aggregate relevel pnorm sd quantile model.matrix
 #' @export trajhrmsm_ipw
 #' @examples
+#' \donttest{
 #' obsdata_long = gendata(n = 1000, format = "long", total_followup = 8,
 #' timedep_outcome = TRUE,  seed = 945)
 #' baseline_var <- c("age","sex")
@@ -50,6 +45,7 @@
 #'  ntimes_interval = 6,total_followup = 8, time = "time", time_values = 2011:2018,
 #' family = "poisson", number_traj = 3, obsdata = obsdata_long, treshold = 0.999)
 #' reshrmsm_ipw$res_trajhrmsm_ipw
+#' }
 
 
 

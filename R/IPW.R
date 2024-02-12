@@ -1,8 +1,8 @@
 #' @title Inverse Probability Weighting
-#' @description Compute stabilized and unstabilized with and without censor weights.
+#' @description Compute stabilized and unstabilized weights, with or without censoring.
 #' @name inverse_probability_weighting
 #' @param numerator To choose between stabilized and unstabilized weights.
-#' @param identifier Name of the column for unique identifier.
+#' @param identifier Name of the column of the unique identifier.
 #' @param baseline Name of the baseline covariates.
 #' @param covariates Name of the time-varying covariates.
 #' @param treatment Name of the time-varying treatment.

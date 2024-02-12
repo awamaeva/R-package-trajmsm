@@ -1,17 +1,17 @@
 #' @title Marginal Structural Model and Latent Class of Growth Analysis estimated with IPW
-#' @description Combine Marginal Structural Model and Latent Class of Growth Analysis
+#' @description Estimate parameters of LCGA-MSM using IPW.
 #' @name trajmsm_ipw
 #' @param formula1 Specification of the model for the outcome to be fitted for a binomial or gaussian distribution.
 #' @param formula2 Specification of the model for the outcome to be fitted for a survival outcome.
 #' @param family Specification of the error distribution and link function to be used in the model.
-#' @param identifier Name of the column for unique identification.
+#' @param identifier Name of the column of the unique identifier.
 #' @param treatment Time-varying treatment.
-#' @param baseline Baseline covariates.
-#' @param covariates Time-varying covariates.
+#' @param baseline Name of the baseline covariates.
+#' @param covariates Names of the time-varying covariates (should be a list).
 #' @param obsdata Dataset to be used in the analysis.
 #' @param numerator Type of weighting ("stabilized" or "unstabilized").
 #' @param weights A vector of estimated weights. If NULL, the weights are computed by the function \code{IPW}.
-#' @param censor name of the censoring variable.
+#' @param censor Name of the censoring variable.
 #' @param include_censor Logical, if TRUE, includes censoring.
 #' @param treshold For weight truncation.
 #' @return Provides estimates of LCGA-MSM obtained using the ipw function.
@@ -21,7 +21,7 @@
 #' @import flexmix geepack
 #' @importFrom stats na.omit rbinom plogis qlogis  reshape glm
 #' binomial coef as.formula ave aggregate relevel pnorm sd quantile model.matrix
-#' @return Provides estimates of LCGA-MSM obtained using IPW.
+#' @return Provides a matrix of estimates for LCGA-MSM, obtained using IPW.
 #' @examples
 #' obsdata_long = gendata(n = 1000, format = "long", total_followup = 6, seed = 945)
 #' years <- 2011:2016

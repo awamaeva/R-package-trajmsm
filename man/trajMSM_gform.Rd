@@ -22,42 +22,43 @@ trajmsm_gform(
 )
 }
 \arguments{
-\item{formula}{specification of the model for the outcome to be fitted.}
+\item{formula}{Specification of the model for the outcome to be fitted.}
 
-\item{rep}{number of repetitions for the bootstrap.}
+\item{rep}{Number of repetitions for the bootstrap.}
 
-\item{identifier}{name of the column for unique identifiant.}
+\item{identifier}{Name of the column of the unique identifier.}
 
-\item{baseline}{vector of names of the baseline covariates.}
+\item{baseline}{Vector of names of the baseline covariates.}
 
-\item{covariates}{list of names of the time-varying covariates.}
+\item{covariates}{List of names of the time-varying covariates.}
 
-\item{treatment}{vector of names of the time-varying treatment.}
+\item{treatment}{Vector of names of the time-varying treatment.}
 
-\item{outcome}{name of the outcome of interest.}
+\item{outcome}{Name of the outcome of interest.}
 
-\item{total_followup}{of measuring times.}
+\item{total_followup}{Total length of follow-up.}
 
-\item{time}{name of the time variable.}
+\item{time}{Name of the time variable.}
 
-\item{time_values}{measuring times.}
+\item{time_values}{Measuring times.}
 
-\item{var_cov}{names of the time-varying covariates in a long format.}
+\item{var_cov}{Names of the time-varying covariates.}
 
-\item{trajmodel}{trajectory model built with the observed treatment.}
+\item{trajmodel}{Trajectory model built with the observed treatment.}
 
-\item{ref}{the reference trajectory group.}
+\item{ref}{The reference trajectory group.}
 
-\item{obsdata}{observed data in wide format.}
+\item{obsdata}{Observed data in wide format.}
 }
 \value{
-Provides estimates of LCGA-MSM obtained using g-formula.
+Provides a matrix of estimates for LCGA-MSM, obtained using the g-formula method.
 }
 \description{
-function to estimate parameters of a MSM-LCGA using g-formula
+Estimate parameters of LCGA-MSM using g-formula
  and bootstrap to get standard errors.
 }
 \examples{
+\donttest{
 obsdata_long = gendata(n = 1000, format = "long", total_followup = 6, seed = 945)
 years <- 2011:2016
 baseline_var <- c("age","sex")
@@ -84,6 +85,7 @@ baseline = baseline_var, covariates = covariates, var_cov = var_cov,
 treatment = treatment_var, outcome = "y", total_followup = 6,time = "time",
 time_values = years, trajmodel = restraj$traj_model,ref = "1", obsdata =   obsdata )
 resmsm_gform
+}
 }
 \author{
 Awa Diop Denis Talbot

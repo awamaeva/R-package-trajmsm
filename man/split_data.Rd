@@ -14,30 +14,32 @@ split_data(
 )
 }
 \arguments{
-\item{obsdata}{observed data in wide format.}
+\item{obsdata}{Observed data in wide format.}
 
-\item{total_followup}{total length of follow-up.}
+\item{total_followup}{Total length of follow-up.}
 
-\item{ntimes_interval}{number of measuring times per interval.}
+\item{ntimes_interval}{Number of measuring times per interval.}
 
-\item{time}{name of the time variable.}
+\item{time}{Name of the time variable.}
 
-\item{time_values}{measuring times.}
+\item{time_values}{Measuring times.}
 
-\item{identifier}{identifier of individuals.}
+\item{identifier}{Identifier of individuals.}
 }
 \value{
-\item{all_df}{all subsets, list of time intervals.}
+\item{all_df}{ All subsets, list of time intervals.}
 }
 \description{
-function to split the data into multiple subsets of size s each
-one corresponding to one time-interval.
+Function to split the data into multiple subsets of size s each
+one subset corresponding to one time-interval.
 }
 \examples{
+\dontrun{
 obsdata = gendata(n = 1000, format = "long", total_followup = 8, seed = 945)
 years <- 2011:2018
 res = split_data(obsdata = obsdata, total_followup = 8,
 ntimes_interval = 6,time = "time", time_values = years,identifier = "id")
+}
 }
 \author{
 Awa Diop Denis Talbot
