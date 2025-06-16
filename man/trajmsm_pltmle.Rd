@@ -17,46 +17,54 @@ trajmsm_pltmle(
   time_values,
   trajmodel,
   ref,
+  treshold = 0.99,
   obsdata,
-  treshold = 0.999
+  class_var
 )
 }
 \arguments{
-\item{formula}{specification of the model for the outcome to be fitted.}
+\item{formula}{Specification of the model for the outcome to be fitted.}
 
-\item{identifier}{name of the column for unique identifiant.}
+\item{identifier}{Name of the column for unique identifiant.}
 
-\item{baseline}{name of baseline covariates.}
+\item{baseline}{Names of the baseline covariates.}
 
-\item{covariates}{covariates.}
+\item{covariates}{Names of the time-varying covariates (should be a list).}
 
-\item{treatment}{time-varying treatment.}
+\item{treatment}{Name of the time-varying treatment.}
 
-\item{number_traj}{an integer to choose the number of trajectory groups.}
+\item{outcome}{Name of the outcome variable.}
 
-\item{total_followup}{number of measuring times per interval.}
+\item{number_traj}{An integer to choose the number of trajectory groups.}
 
-\item{time}{name of the time variable.}
+\item{total_followup}{Total length of follow-up.}
 
-\item{time_values}{measuring times.}
+\item{time}{Name of the time variable.}
 
-\item{trajmodel}{trajectory model built with the observed treatment.}
+\item{time_values}{Measuring times.}
 
-\item{ref}{the reference group.}
+\item{trajmodel}{Trajectory model built with the observed treatment.}
 
-\item{obsdata}{observed data in wide format.}
+\item{ref}{The reference group.}
+
+\item{treshold}{For weight truncation.}
+
+\item{obsdata}{Observed data in wide format.}
+
+\item{class_var}{Name of the trajectory group variable.}
 }
 \value{
-Provides estimates of LCGA-MSM obtained using pooled ltlmle.
+Provides a matrix of estimates for LCGA-MSM, obtained using the pooled ltlmle method.
 
 \item{results_msm_pooledltmle}{Estimates of a LCGA-MSM with pooled LTMLE.}
 }
 \description{
-function to estimate parameters of a MSM-LCGA using pooled LTMLE
+Estimate parameters of LCGA-MSM using pooled LTMLE
  with influence functions to estimate standard errors.
 }
 \examples{
-obsdata_long = gendata(n = 1000, format = "long", total_followup = 6, seed = 945)
+\donttest{
+obsdata_long = gendata(n = 1000, format = "long", total_followup = 6, seed = 845)
 years <- 2011:2016
 baseline_var <- c("age","sex")
 variables <- c("hyper", "bmi")
@@ -70,17 +78,20 @@ datapost = restraj$data_post
 trajmsm_long <- merge(obsdata_long, datapost, by = "id")
     AggFormula <- as.formula(paste("statins", "~", "time", "+", "class"))
     AggTrajData <- aggregate(AggFormula, data = trajmsm_long, FUN = mean)
-    AggTrajData
 trajmsm_wide = reshape(data = trajmsm_long, direction = "wide", idvar = "id",
 v.names = c("statins","bmi","hyper"), timevar = "time", sep ="")
 formula = paste0("y ~", paste0(treatment_var,collapse = "+"), "+",
                 paste0(unlist(covariates), collapse = "+"),"+",
                 paste0(baseline_var, collapse = "+"))
-resmsm_pltmle <- trajmsm_pltmle(formula = formula, identifier = "id", baseline = baseline_var,
- covariates = covariates, treatment = treatment_var, outcome = "y",
- time = "time", time_values = years, number_traj = 3, total_followup = 6,
- trajmodel = restraj$traj_model, ref = "1", obsdata = trajmsm_wide, treshold = 0.99)
+resmsm_pltmle <- trajmsm_pltmle(formula = formula, identifier = "id",
+ baseline = baseline_var,
+ covariates = covariates, treatment = treatment_var,
+ outcome = "y", time = "time", time_values = years,
+ number_traj = 3, total_followup = 6,
+ trajmodel = restraj$traj_model, ref = "1", obsdata = trajmsm_wide,
+  treshold = 1,class_var = "class")
  resmsm_pltmle
+ }
 }
 \author{
 Awa Diop, Denis Talbot

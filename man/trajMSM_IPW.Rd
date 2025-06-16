@@ -12,10 +12,9 @@ trajmsm_ipw(
   treatment,
   covariates,
   baseline,
-  number_traj,
   obsdata,
   numerator = "stabilized",
-  include_censor,
+  include_censor = FALSE,
   censor,
   weights = NULL,
   treshold = 0.99
@@ -28,34 +27,37 @@ trajmsm_ipw(
 
 \item{family}{Specification of the error distribution and link function to be used in the model.}
 
-\item{identifier}{Name of the column for unique identification.}
+\item{identifier}{Name of the column of the unique identifier.}
 
 \item{treatment}{Time-varying treatment.}
 
-\item{covariates}{Time-varying covariates.}
+\item{covariates}{Names of the time-varying covariates (should be a list).}
 
-\item{baseline}{Baseline covariates.}
-
-\item{number_traj}{An integer to fix the number of trajectory groups.}
+\item{baseline}{Name of the baseline covariates.}
 
 \item{obsdata}{Dataset to be used in the analysis.}
 
 \item{numerator}{Type of weighting ("stabilized" or "unstabilized").}
+
+\item{include_censor}{Logical, if TRUE, includes censoring.}
+
+\item{censor}{Name of the censoring variable.}
 
 \item{weights}{A vector of estimated weights. If NULL, the weights are computed by the function \code{IPW}.}
 
 \item{treshold}{For weight truncation.}
 }
 \value{
-Provides estimates of LCGA-MSM obtained using the ipw function.
+Provides a matrix of estimates for LCGA-MSM, obtained using IPW.
 
-Provides estimates of LCGA-MSM obtained using IPW.
+Provides a matrix of estimates for LCGA-MSM, obtained using IPW.
 }
 \description{
-Combine Marginal Structural Model and Latent Class of Growth Analysis
+Estimate parameters of LCGA-MSM using IPW.
 }
 \examples{
-obsdata_long = gendata(n = 1000, format = "long", total_followup = 6, seed = 945)
+\donttest{
+obsdata_long = gendata(n = 1000, format = "long", total_followup = 6, seed = 845)
 years <- 2011:2016
 baseline_var <- c("age","sex")
 variables <- c("hyper", "bmi")
@@ -79,7 +81,8 @@ formula = paste0("y ~", paste0(treatment_var,collapse = "+"), "+",
 
 resmsm_ipw = trajmsm_ipw(formula1 = as.formula("y ~ ipw_group"),
            identifier = "id", baseline = baseline_var, covariates = covariates,
-           treatment = treatment_var, number_traj=3, family = "binomial",
-           obsdata = obsdata,numerator = "stabilized", include_censor = FALSE)
+           treatment = treatment_var, family = "binomial",
+           obsdata = obsdata,numerator = "stabilized", include_censor = FALSE, treshold = 0.99)
 resmsm_ipw
+}
 }

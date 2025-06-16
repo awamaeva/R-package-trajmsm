@@ -2,7 +2,7 @@
 % Please edit documentation in R/gformula.R
 \name{gformula}
 \alias{gformula}
-\title{Counterfactual means for g-formula.}
+\title{Counterfactual means via G-Formula}
 \usage{
 gformula(
   formula,
@@ -15,25 +15,42 @@ gformula(
 )
 }
 \arguments{
-\item{formula}{specification of the model for the outcome to be fitted.}
+\item{formula}{Specification of the model for the outcome to be fitted.}
 
-\item{baseline}{name of the baseline covariates.}
+\item{baseline}{Names of the baseline covariates.}
 
-\item{covariates}{list of the names of the time-varying covariates.}
+\item{covariates}{Names of the time-varying covariates (should be a list).}
 
-\item{treatment}{name of the time-varying treatment.}
+\item{treatment}{Names of the time-varying treatment.}
 
-\item{ntimes_interval}{length of a time-interval (s).}
+\item{outcome}{Name of the outcome variable.}
 
-\item{obsdata}{observed data in wide format.}
+\item{ntimes_interval}{Length of a time-interval (s).}
 
-\item{Y}{outcome variable.}
+\item{obsdata}{Observed data in wide format.}
 }
 \value{
-\item{list_gform_countermeans}{Counterfactual means obtained with g-formula.}
+\item{list_gform_countermeans}{ List of counterfactual means obtained with g-formula.}
 }
 \description{
-Get the counterfactual means for the g-formula.
+Calculates counterfactual means using the g-formula approach.
+}
+\examples{
+\donttest{
+obsdata = gendata(n = 1000, format = "wide", total_followup = 6, seed = 945)
+years <- 2011:2016
+baseline_var <- c("age","sex")
+variables <- c("hyper", "bmi")
+var_cov <- c("statins","hyper", "bmi")
+covariates <- lapply(years, function(year) {
+paste0(variables, year)})
+treatment_var <- paste0("statins", 2011:2016)
+formula = paste0("y ~", paste0(treatment_var,collapse = "+"), "+",
+                paste0(unlist(covariates), collapse = "+"),"+",
+                paste0(baseline_var, collapse = "+"))
+res_gform <- gformula(formula = formula, baseline = baseline_var, covariates = covariates,
+treatment = treatment_var, outcome = "y", ntimes_interval = 6, obsdata =   obsdata )
+}
 }
 \author{
 Awa Diop, Denis Talbot

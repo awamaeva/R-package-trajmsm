@@ -1,5 +1,5 @@
-#' @title Wrapper of flexmix
-#' @description Call the package flexmix to construct trajectory groups
+#' @title Wrapper for flexmix
+#' @description Call the package flexmix to build trajectory groups
 #' @name build_traj
 #' @param obsdata Data to build trajectory groups in long format.
 #' @param number_traj An integer to fix the number of trajectory groups.
@@ -39,7 +39,7 @@ build_traj <- function(obsdata, formula, number_traj, identifier, family = "bino
   # Extracting posterior probabilities and trajectory groupings
   data_post <- data.frame(posterior(res_traj)) # Posterior probabilities
   data_post$class <- factor(res_traj@cluster)  # Group trajectories
-  data_post[, eval(deparse(identifier))] <- as.integer(as.character(res_traj@group))
+  data_post[, eval(deparse(identifier))] <- res_traj@group
   data_post <- unique(data_post)
 
   return(list(data_post = data_post, traj_model = res_traj))

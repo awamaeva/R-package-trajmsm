@@ -1,28 +1,29 @@
 #' @title Marginal Structural Model and Latent Class of Growth Analysis estimated with IPW
-#' @description Combine Marginal Structural Model and Latent Class of Growth Analysis
+#' @description Estimate parameters of LCGA-MSM using IPW.
 #' @name trajmsm_ipw
 #' @param formula1 Specification of the model for the outcome to be fitted for a binomial or gaussian distribution.
 #' @param formula2 Specification of the model for the outcome to be fitted for a survival outcome.
 #' @param family Specification of the error distribution and link function to be used in the model.
-#' @param identifier Name of the column for unique identification.
+#' @param identifier Name of the column of the unique identifier.
 #' @param treatment Time-varying treatment.
-#' @param baseline Baseline covariates.
-#' @param covariates Time-varying covariates.
-#' @param number_traj An integer to fix the number of trajectory groups.
+#' @param baseline Name of the baseline covariates.
+#' @param covariates Names of the time-varying covariates (should be a list).
 #' @param obsdata Dataset to be used in the analysis.
 #' @param numerator Type of weighting ("stabilized" or "unstabilized").
 #' @param weights A vector of estimated weights. If NULL, the weights are computed by the function \code{IPW}.
+#' @param censor Name of the censoring variable.
+#' @param include_censor Logical, if TRUE, includes censoring.
 #' @param treshold For weight truncation.
-#' @return Provides estimates of LCGA-MSM obtained using the ipw function.
+#' @return Provides a matrix of estimates for LCGA-MSM, obtained using IPW.
 #' @export trajmsm_ipw
-#' @import sandwich
 #' @importFrom survival coxph
-#' @import flexmix
+#' @import flexmix sandwich
 #' @importFrom stats na.omit rbinom plogis qlogis  reshape glm
 #' binomial coef as.formula ave aggregate relevel pnorm sd quantile model.matrix
-#' @return Provides estimates of LCGA-MSM obtained using IPW.
+#' @return Provides a matrix of estimates for LCGA-MSM, obtained using IPW.
 #' @examples
-#' obsdata_long = gendata(n = 1000, format = "long", total_followup = 6, seed = 945)
+#' \donttest{
+#' obsdata_long = gendata(n = 1000, format = "long", total_followup = 6, seed = 845)
 #' years <- 2011:2016
 #' baseline_var <- c("age","sex")
 #' variables <- c("hyper", "bmi")
@@ -46,48 +47,64 @@
 #'
 #'resmsm_ipw = trajmsm_ipw(formula1 = as.formula("y ~ ipw_group"),
 #'            identifier = "id", baseline = baseline_var, covariates = covariates,
-#'            treatment = treatment_var, number_traj=3, family = "binomial",
-#'            obsdata = obsdata,numerator = "stabilized", include_censor = FALSE)
+#'            treatment = treatment_var, family = "binomial",
+#'            obsdata = obsdata,numerator = "stabilized", include_censor = FALSE, treshold = 0.99)
 #'resmsm_ipw
-
+#'}
 
 trajmsm_ipw <- function(formula1, formula2, family, identifier, treatment, covariates,
-                         baseline, number_traj, obsdata,
-                         numerator = "stabilized",include_censor, censor, weights = NULL, treshold = 0.99) {
+                        baseline, obsdata,
+                        numerator = "stabilized", include_censor = FALSE,
+                        censor, weights = NULL, treshold = 0.99) {
 
   # Compute weights if not provided
   if (is.null(weights)) {
-    weights <- inverse_probability_weighting(identifier = identifier, covariates = covariates,
+    weights <- inverse_probability_weighting(identifier = as.character(identifier), covariates = covariates,
                                              treatment = treatment, baseline = baseline,
-                                              numerator = numerator,
-                                             include_censor = include_censor, censor = censor,obsdata = obsdata)[[1]][, length(treatment)]
+                                             numerator = numerator,
+                                             include_censor = include_censor, censor = censor, obsdata = obsdata)[[1]][, length(treatment)]
 
-    obsdata$weights <- ifelse(quantile(weights, treshold, na.rm = TRUE)> weights, quantile(weights, treshold, na.rm = TRUE), weights)
+    obsdata$weights <- ifelse(quantile(weights, treshold, na.rm = TRUE) > weights, quantile(weights, treshold, na.rm = TRUE), weights)
   } else {
     obsdata$weights <- weights
   }
 
   # Model fitting
-  cluster_formula <- as.formula(paste0("~", identifier))
-  if (family == "gaussian") {
-    mod_glm <- glm(formula1, data = obsdata, weights = weights, family = gaussian)
-  } else if (family == "binomial") {
-    mod_glm <- glm(formula1, data = obsdata, weights = weights, family = binomial)
-  } else if (family == "survival") {
-    mod_glm <- coxph(formula2, data = obsdata,cluster = get(identifier), weights = weights)
+  if (family == "survival") {
+    # Prepare the list of arguments for coxph
+    args_list <- list(
+      formula = formula2,
+      data = obsdata,
+      cluster = as.formula(paste0("~", identifier)), # Dynamically construct cluster formula
+      weights = weights
+    )
+
+    # Use do.call to invoke coxph with dynamically constructed arguments
+    mod_glm <- do.call("coxph", args_list)
+  } else {
+    # Fit a standard glm model
+    mod_glm <- glm(formula = formula1, data = obsdata, weights = obsdata$weights, family = family)
+
+    # Compute robust standard errors using the sandwich package
+    cluster_formula <- as.formula(paste0("~", identifier))
+    robust_se <- sqrt(diag(vcovCL(mod_glm, cluster = cluster_formula)));
   }
 
   # Extracting model results
-  coefs <- coef(summary(mod_glm))[, 1]
-  se <- sqrt(diag(vcovCL(mod_glm, cluster = cluster_formula)))
-  pvalue <- coef(summary(mod_glm))[,4]
+  coefs <- coef(mod_glm)
+  if (family == "survival") {
+    # Extract standard errors for survival models
+    se <- coef(summary(mod_glm))[, 2]
+  } else {
+    se <- robust_se  # Use robust standard errors for non-survival models
+  }
+  pvalue <- 2 * pnorm(-abs(coefs) / se)
   ic_lo <- coefs - 1.96 * se
   ic_up <- coefs + 1.96 * se
 
-  res_trajmsm <- cbind(coefs, se, pvalue, ic_lo, ic_up)
-  colnames(res_trajmsm) <- c("Estimate", "Std.Error", "Pvalue", "Lower CI", "Upper CI")
+  restrajmsm_ipw <- cbind(coefs, se, pvalue, ic_lo, ic_up)
+  colnames(restrajmsm_ipw) <- c("Estimate", "Std.Error", "Pvalue", "Lower CI", "Upper CI")
 
-  return(res_trajmsm)
+  return(restrajmsm_ipw)
 }
-
 

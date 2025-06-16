@@ -1,15 +1,18 @@
-#' @title Generate Data Trajectories for MSM
+#' @title Generate data trajectories for MSM
+#' @description
+#' Provides datasets for running examples for LCGA-MSM and LCGA-HRMSM.
+#' @name  gendata
 #' @param n Number of observations to generate.
 #' @param include_censor Logical, if TRUE, includes censoring.
 #' @param format Character, either "long" or "wide" for the format of the output data frame.
 #' @param timedep_outcome Logical, if TRUE, includes a time-dependent outcome.
-#' @param start_year baseline year.
+#' @param start_year Baseline year.
 #' @param total_followup Number of measuring times.
-#' @param seed, use a specific seed value to ensure the simulated data is replicable.
+#' @param seed, Use a specific seed value to ensure the simulated data is replicable.
 #' @importFrom stats na.omit rbinom plogis qlogis  reshape glm
 #' binomial coef as.formula
-#' @export gendata
-#' @return A data frame with generated trajectories.
+#' @export
+#' @return A data frame with generated data trajectories.
 #' @examples
 #' gendata(n = 100, include_censor = FALSE, format = "wide",total_followup = 3, seed = 945)
 
@@ -74,7 +77,6 @@ gendata<- function(n, include_censor = FALSE, format = c("long", "wide"),
 
 
     if (include_censor && format == "long"){
-      obsdata = obsdata_long
       obsdata$censor <- as.vector(censor)
     }
 
@@ -129,7 +131,6 @@ gendata<- function(n, include_censor = FALSE, format = c("long", "wide"),
 
 
       if (include_censor  && format == "long") {
-        obsdata = obsdata_long
         obsdata$censor <- as.vector(censor)
       }
 

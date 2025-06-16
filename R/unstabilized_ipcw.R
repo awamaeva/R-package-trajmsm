@@ -10,7 +10,6 @@
 #' @return Unstabilized Inverse Probability of Censoring Weights
 #' @keywords internal
 #' @noRd
-#' @export
 #' @author Awa Diop, Denis Talbot
 #' @note This function requires data in a wide format.
 #' @examples
@@ -57,8 +56,8 @@ unstabilized_ipcw <- function(identifier, treatment, covariates, baseline, censo
     weight_censor_temp[, i][obsdata[,censor[i-1]] == 0] <- 1 / (1 - ps_denom_censor)
   }
 
-  form_denom_treatment_t1 <- as.formula(paste0(treatment[1], "~", paste0(baseline, collapse = "+")))
-  form_denom_censor_t1 <- as.formula(paste0(censor[1], "~", paste0(baseline, collapse = "+")))
+  form_denom_treatment_t1 <- as.formula(paste0(treatment[1], "~", paste0(unlist(covariates[1]),collapse = "+"), "+", paste0(baseline, collapse = "+")))
+  form_denom_censor_t1 <- as.formula(paste0(censor[1], "~", paste0(unlist(covariates[1]),collapse = "+"), "+", paste0(baseline, collapse = "+")))
 
   fit_denom_treatment_t1 <- glm(form_denom_treatment_t1, family = binomial(link = "logit"), data = obsdata)
   fit_denom_censor_t1 <- glm(form_denom_censor_t1, family = binomial(link = "logit"), data = obsdata)

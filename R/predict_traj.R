@@ -2,13 +2,14 @@
 #' @description Function to predict trajectory groups for deterministic treatment regimes
 #' used with gformula and pooled LTMLE.
 #' @name predict_traj
-#' @param identifier Name of the column for unique identifier.
+#' @param identifier Name of the column of the unique identifier.
 #' @param total_followup Number of measuring times.
 #' @param treatment Name of the time-varying treatment.
-#' @param time name of the variable time.
-#' @param time_values values of the time variable.
+#' @param time Name of the variable time.
+#' @param time_values Values of the time variable.
 #' @param trajmodel Trajectory model built with the observed treatment.
 #' @import flexmix e1071
+#' @return A data.frame with the posterior probabilities.
 #' @export predict_traj
 #' @author Awa Diop, Denis Talbot
 

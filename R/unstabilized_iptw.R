@@ -9,7 +9,6 @@
 #' @return Unstabilized inverse of treatment probabilities
 #' @keywords internal
 #' @noRd
-#' @export
 #' @author Awa Diop, Denis Talbot
 #' @note This function requires data in a wide format.
 #' @examples
@@ -26,7 +25,7 @@
 unstabilized_iptw <- function(identifier, treatment, covariates, baseline, obsdata) {
   # Check if observed data is in the correct format
   if (!is.data.frame(obsdata)) {
-    stop("obsdatamust be a data frame in wide format")
+    stop("obsdata must be a data frame in wide format")
   }
 
   # Validate the presence of required arguments
@@ -54,17 +53,16 @@ unstabilized_iptw <- function(identifier, treatment, covariates, baseline, obsda
     fit_denom <- glm(form_denom, family = binomial(link = "logit"), data = obsdata)
 
     # Predicting probabilities
-    ps_denom <- predict(fit_denom, type = "response")
+    ps_denom <- predict(fit_denom, type = "response",  data = obsdata)
 
     # Calculating weights
     weights_temp[, i] <- (1 - obsdata[, treatment[i]]) / (1 - ps_denom) + obsdata[, treatment[i]] / ps_denom
   }
 
   # Calculate weights for the first time point
-  first_time_covariates <- paste0(covariates[grep("1", covariates)], collapse = "+")
   form_denom_t1 <- as.formula(paste0(treatment[1], "~", paste0(unlist(covariates[1]),collapse = "+"), "+", paste0(baseline, collapse = "+")))
   fit_denom_t1 <- glm(form_denom_t1, family = binomial(link = "logit"), data = obsdata)
-  ps_denom_t1 <- predict(fit_denom_t1, type = "response")
+  ps_denom_t1 <- predict(fit_denom_t1, type = "response",  data = obsdata)
   weights_temp[, 1] <- (1 - obsdata[, treatment[1]]) / (1 - ps_denom_t1) + obsdata[, treatment[1]] / ps_denom_t1
 
   # Calculate cumulative product of weights

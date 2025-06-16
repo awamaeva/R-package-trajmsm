@@ -18,7 +18,7 @@ inverse_probability_weighting(
 \arguments{
 \item{numerator}{To choose between stabilized and unstabilized weights.}
 
-\item{identifier}{Name of the column for unique identifier.}
+\item{identifier}{Name of the column of the unique identifier.}
 
 \item{baseline}{Name of the baseline covariates.}
 
@@ -36,7 +36,7 @@ inverse_probability_weighting(
 Inverse Probability Weights (Stabilized and Unstabilized) with and without censoring.
 }
 \description{
-Compute stabilized and unstabilized with and without censor weights.
+Compute stabilized and unstabilized weights, with or without censoring.
 }
 \examples{
 obsdata = gendata(n = 1000, format = "wide",total_followup = 3, seed = 945)

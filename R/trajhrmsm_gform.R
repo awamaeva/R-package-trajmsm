@@ -1,37 +1,39 @@
 #' @title History Restricted MSM and Latent Class of Growth Analysis estimated with G-formula.
-#' @description Estimate parameters of LCGA-HRMSM Using g-formula.
+#' @description Estimate parameters of LCGA-HRMSM using g-formula.
 #'  and bootstrap to get standard errors.
 #' @name trajhrmsm_gform
-#' @param formula specification of the model for the outcome to be fitted for a binomial or gaussian distribution.
-#' @param family specification of the error distribution and link function to be used in the model.
-#' @param degree_traj to specify the polynomial degree for modelling the time-varying treatment.
-#' @param identifier  name of the column for unique identifiant.
-#' @param baseline name of baseline covariates.
-#' @param covariates names of time-varying covariates in a wide format.
-#' @param treatment name of time-varying treatment.
-#' @param var_cov names of the time-varying covariates in a long format.
-#' @param ntimes_interval length of a time-interval (s).
-#' @param total_followup total length of follow-up.
-#' @param censor name of the censoring variable.
-#' @param number_traj number of trajectory groups.
-#' @param rep number of repetition for the bootstrap.
-#' @param obsdata data in a long format.
-#' @param time name of the time variable.
-#' @param time_values measuring times.
+#' @param family Specification of the error distribution and link function to be used in the model.
+#' @param degree_traj To specify the polynomial degree for modelling the time-varying treatment.
+#' @param identifier  Name of the column of the unique identifier.
+#' @param baseline Name of baseline covariates.
+#' @param covariates Names of the time-varying covariates (should be a list).
+#' @param treatment Name of the time-varying treatment.
+#' @param outcome Name of the outcome variable.
+#' @param var_cov Names of the time-varying variables.
+#' @param ntimes_interval Length of a time-interval (s).
+#' @param total_followup Total length of follow-up.
+#' @param number_traj Number of trajectory groups.
+#' @param rep Number of repetition for the bootstrap.
+#' @param obsdata Data in a long format.
+#' @param time Name of the time variable.
+#' @param time_values Measuring times.
 #' @return A list containing the following components:
-#'   \itemize{
-#'   \item{results_hrmsm_gform}{Estimates of LCGA-HRMSM.}
-#'   \item{result_coef_boot}{Estimates obtained with bootstrap.}
-#'   \item{restraj}{Fitted trajectory model.}
-#'   \item{mean_adh}{Mean adherence per trajectory group.}
-#'   }
+#' \describe{
+#'   \item{results_hrmsm_gform}{ Matrix of estimates for LCGA-MSM, obtained using the g-formula method.}
+#'   \item{result_coef_boot}{ Matrix of estimates obtained with bootstrap.}
+#'   \item{restraj}{ Fitted trajectory model.}
+#'   \item{mean_adh}{ Matrix of mean adherence per trajectory group.}
+#' }
 #' @importFrom stats na.omit rbinom plogis qlogis  reshape glm
 #' binomial coef as.formula ave aggregate relevel pnorm sd quantile model.matrix
+#' quasibinomial var
+#' @importFrom utils combn
 #' @export
 #' @author Awa Diop Denis Talbot
 #' @examples
-#' obsdata_long = gendata(n = 1000, format = "long", total_followup = 8,
-#' timedep_outcome = TRUE,  seed = 945)
+#' \donttest{
+#' obsdata_long = gendata(n = 5000, format = "long", total_followup = 8,
+#' timedep_outcome = TRUE,  seed = 845)
 #' baseline_var <- c("age","sex")
 #' years <- 2011:2018
 #' variables <- c("hyper", "bmi")
@@ -39,12 +41,13 @@
 #' paste0(variables, year)})
 #' treatment_var <- paste0("statins", 2011:2018)
 #' var_cov <- c("statins","hyper", "bmi")
-#' reshrmsm_gform = trajhrmsm_gform(degree_traj = "linear", rep=5 ,
+#' reshrmsm_gform = trajhrmsm_gform(degree_traj = "linear", rep=50 ,
 #' treatment = treatment_var,covariates = covariates, baseline = baseline_var,
 #' outcome = "y",var_cov = var_cov, ntimes_interval = 6, total_followup = 8,
 #'  time = "time",time_values = years, identifier = "id",
 #' number_traj = 3, family = "poisson", obsdata = obsdata_long)
 #'reshrmsm_gform$results_hrmsm_gform
+#'}
 
 
 
@@ -153,7 +156,6 @@ trajhrmsm_gform <- function(degree_traj = c("linear","quadratic","cubic"),
 
 
     result_coef_boot[b,] <- bootf(df,x = list_indices, ref= ref)[1:number_traj]
-    cat('Replication', b, 'of', rep,'\n')
   }
 
    for(i in 1:nb_sub){

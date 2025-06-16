@@ -10,7 +10,6 @@
 #' @return Stabilized Inverse Probability of Censoring Weights
 #' @keywords internal
 #' @noRd
-#' @export
 #' @author Awa Diop, Denis Talbot
 #' @note This function requires data in a wide format.
 #' @examples
@@ -74,8 +73,8 @@ stabilized_ipcw <- function(identifier, treatment, covariates, baseline, censor,
 
   # Formulating denominator model for treatment and censoring at t=1
   # Including only the baseline covariates since it's the first time point
-  form_denom_treatment_t1 <- as.formula(paste0(treatment[1], "~", paste0(baseline, collapse = "+")))
-  form_denom_censor_t1 <- as.formula(paste0(censor[1], "~", paste0(baseline, collapse = "+")))
+  form_denom_treatment_t1 <- as.formula(paste0(treatment[1], "~", paste0(unlist(covariates[1]),collapse = "+"), "+", paste0(baseline, collapse = "+")))
+  form_denom_censor_t1 <- as.formula(paste0(censor[1], "~", paste0(unlist(covariates[1]),collapse = "+"), "+", paste0(baseline, collapse = "+")))
 
   # Fitting models for numerator at t=1
   fit_num_treatment_t1 <- glm(form_num_treatment_t1, family = binomial(link = "logit"), data = obsdata)

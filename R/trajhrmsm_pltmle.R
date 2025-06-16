@@ -1,36 +1,37 @@
 #' @title History Restricted MSM and Latent Class of Growth Analysis estimated with a Pooled LTMLE.
-#' @description Estimate parameters of LCGA-HRMSM Using a Pooled LTMLE.
+#' @description Estimate parameters of LCGA-HRMSM using a Pooled LTMLE.
 #' @name trajhrmsm_pltmle
-#' @param formula specification of the model for the outcome to be fitted for a binomial or gaussian distribution.
-#' @param family specification of the error distribution and link function to be used in the model.
-#' @param degree_traj to specify the polynomial degree for modelling the time-varying treatment.
-#' @param identifier  name of the column for unique identifiant.
-#' @param baseline name of baseline covariates.
-#' @param covariates names of time-varying covariates in a wide format.
-#' @param treatment name of time-varying treatment.
-#' @param var_cov names of the time-varying covariates in a long format.
-#' @param ntimes_interval length of a time-interval (s).
-#' @param total_followup total length of follow-up.
-#' @param censor name of the censoring variable.
-#' @param number_traj number of trajectory groups.
-#' @param rep number of repetition for the bootstrap.
-#' @param obsdata data in a long format.
-#' @param time name of the time variable.
-#' @param time_values measuring times.
+#' @param family Specification of the error distribution and link function to be used in the model.
+#' @param degree_traj To specify the polynomial degree for modelling the time-varying treatment.
+#' @param identifier  Name of the column for unique identifiant.
+#' @param baseline Names of baseline covariates.
+#' @param covariates Names of time-varying covariates (should be a list).
+#' @param treatment Name of time-varying treatment.
+#' @param outcome Name of the outcome variable.
+#' @param var_cov Names of the time-varying variables.
+#' @param ntimes_interval Length of a time-interval (s).
+#' @param total_followup Total length of follow-up.
+#' @param number_traj Number of trajectory groups.
+#' @param treshold For weight truncation.
+#' @param obsdata Data in a long format.
+#' @param time Name of the time variable.
+#' @param time_values Measuring times.
 #' @importFrom stats na.omit rbinom plogis qlogis  reshape glm
 #' binomial coef as.formula ave aggregate relevel pnorm sd quantile model.matrix
+#' quasibinomial var
+#' @importFrom utils combn
 #' @export
 #' @return A list containing the following components:
-#'   \itemize{
-#'   \item{results_hrmsm_pltmle}{Estimates of LCGA-HRMSM.}
-#'   \item{result_coef_boot}{Estimates obtained with bootstrap.}
-#'   \item{restraj}{Fitted trajectory model.}
-#'   \item{mean_adh}{Mean adherence per trajectory group.}
+#'   \describe{
+#'   \item{results_hrmsm_pltmle}{ Matrix of estimates for LCGA-HRMSM, obtained using the pooled ltlmle method.}
+#'   \item{restraj}{ Fitted trajectory model.}
+#'   \item{mean_adh}{ Matrix of the mean adherence per trajectory group.}
 #'   }
 #' @author Awa Diop Denis Talbot
 #' @examples
-#' obsdata_long = gendata(n = 1000, format = "long",
-#' total_followup = 8, timedep_outcome = TRUE,  seed = 945)
+#' \donttest{
+#' obsdata_long = gendata(n = 5000, format = "long",
+#' total_followup = 8, timedep_outcome = TRUE,  seed = 845)
 #' baseline_var <- c("age","sex")
 #' years <- 2011:2018
 #' variables <- c("hyper", "bmi")
@@ -42,8 +43,9 @@
 #' covariates = covariates, baseline = baseline_var,
 #' outcome = paste0("y", 2016:2018),var_cov = var_cov, ntimes_interval = 6,
 #' total_followup = 8, time = "time",time_values = years, identifier = "id",
-#' number_traj = 3, family = "poisson", obsdata = obsdata_long)
+#' number_traj = 3, family = "poisson", obsdata = obsdata_long,treshold = 1)
 #' respltmle$results_hrmsm_pltmle
+#' }
 
 
 
@@ -84,9 +86,9 @@ trajhrmsm_pltmle <-  function(degree_traj = c("linear","quadratic","cubic"),
                          identifier = "identifier2")
   }
 
-  dclass <- data.frame(ptmle_group = factor(restraj$data_post[,"class"]), identifier2 = restraj$data_post[,"identifier2"])
+  dclass <- data.frame(pltmle_group = factor(restraj$data_post[,"class"]), identifier2 = restraj$data_post[,"identifier2"])
   dat_final <- merge(dat_sub, dclass, by = "identifier2")
-  mean_adh <- aggregate(as.formula(paste0(treatment_name, "~", "ptmle_group")), FUN = mean, data = dat_final)
+  mean_adh <- aggregate(as.formula(paste0(treatment_name, "~", "pltmle_group")), FUN = mean, data = dat_final)
   ord_adh<- order(-mean_adh[,2])
   ref <- as.character(ord_adh[length(ord_adh)])
   nregimes = 2^ntimes_interval #number of treatment regimes
@@ -107,10 +109,11 @@ trajhrmsm_pltmle <-  function(degree_traj = c("linear","quadratic","cubic"),
 
     list_obsdata_pool <- list()
     list_D <- list()
+    df <- data.frame()
 
     for(i in 1:nb_sub){
       #Create the data under all the different regime of treatment
-      df = list_obsdata[[i]];
+      df = subset(dat_final, dat_final$Interv == i);
       df_l = reshape(df, direction = "wide", idvar = identifier, v.names = var_cov, timevar = time, sep ="")
 
       outcome_up <- outcome[outcome %in% colnames(df_l)]
@@ -126,11 +129,12 @@ trajhrmsm_pltmle <-  function(degree_traj = c("linear","quadratic","cubic"),
 
       res_pltmle = pltmle(formula = form, outcome = outcome_up,treatment = treatment_up,
                           covariates = cov_up, baseline = baseline, ntimes_interval = ntimes_interval, number_traj = number_traj,
-                          time =  time,identifier = identifier,obsdata = df_l,traj=traj_indic, treshold = treshold);
+                          time =  time,identifier = identifier,obsdata = df_l,traj=traj_indic,
+                          treshold = treshold, class_var = "pltmle_group", class_pred = class);
 
       obsdata_pool= data.frame(Y=res_pltmle$counter_means);
       D=res_pltmle$D; #Influence functions
-      obsdata_pool$tmle_group = class
+      obsdata_pool$pltmle_group = class
       obsdata_pool$Interv <- i
 
       list_obsdata_pool[i] <- list(obsdata_pool)
@@ -139,9 +143,9 @@ trajhrmsm_pltmle <-  function(degree_traj = c("linear","quadratic","cubic"),
     }
 
     all_obsdata_pool <- data.frame(do.call(rbind, list_obsdata_pool))
-    all_obsdata_pool$tmle_group <- relevel(factor(all_obsdata_pool$tmle_group), ref = ref)
+    all_obsdata_pool$pltmle_group <- relevel(factor(all_obsdata_pool$pltmle_group), ref = ref)
     # Estimation
-    mod = glm(Y ~ factor(tmle_group) + factor(Interv), data =  all_obsdata_pool, family = family);
+    mod = glm(Y ~ factor(pltmle_group) + factor(Interv), data =  all_obsdata_pool, family = family);
     coefs = summary(mod)$coefficients[1:number_traj,1];
 
 
@@ -161,7 +165,7 @@ trajhrmsm_pltmle <-  function(degree_traj = c("linear","quadratic","cubic"),
       CQ = Reduce('+',CQ);
       CQ_list[t] <- list(CQ)
       for(l in 1:nregimes){
-        Db = Db+as.matrix(list_D[[t]][[l]])%*%solve(CQ);
+        Db = Db +as.matrix(list_D[[t]][[l]])%*%solve(CQ);
       }
 
       Db_list[t] <- list(Db)
@@ -174,6 +178,7 @@ trajhrmsm_pltmle <-  function(degree_traj = c("linear","quadratic","cubic"),
     CQ = Reduce('+',CQ);
     CQ_list[3] <- list(CQ)
     Db = matrix(0, nrow = nrow(list_D[[nb_sub]][[1]]), ncol = number_traj);
+
     for(l in 1:nregimes){
       Db = Db+as.matrix(list_D[[nb_sub]][[l]])%*%solve(CQ);
     }
@@ -186,8 +191,8 @@ trajhrmsm_pltmle <-  function(degree_traj = c("linear","quadratic","cubic"),
     pairs = combn(nb_sub, 2)
     list_df = Db_list
     #sample nregimes for each dataframe of influences functions
-    n_df <- lapply(list_obsdata, function(x) nrow(na.omit(data.frame(x))))
-
+    n_df = lapply(list_obsdata, function(x) length(unique(data.frame(x)[, identifier])))
+    n  = length(unique(obsdata[,identifier]))
     #variances
 
     var <- lapply(1:nb_sub,function(i){
@@ -211,6 +216,7 @@ trajhrmsm_pltmle <-  function(degree_traj = c("linear","quadratic","cubic"),
       return(vrc)}
     )
 
+
     # minimum sample nregimes per pairs of values
     min_ndf <- lapply(1:ncol(pairs),function(i){
       x = pairs[,i]
@@ -228,7 +234,7 @@ trajhrmsm_pltmle <-  function(degree_traj = c("linear","quadratic","cubic"),
       return(var_temp)}
     )
 
-    se = sqrt((Reduce('+',all_cov) + Reduce('+',all_var))/(Reduce('+',n_df)**2))
+    se = sqrt((Reduce('+',all_cov) + Reduce('+',all_var))/(n)**2)
     pvalue <- 2*pnorm(-abs(coefs)/se)
     #Results
     lo.ci = coefs - 1.96*se ;

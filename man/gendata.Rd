@@ -2,7 +2,7 @@
 % Please edit documentation in R/gendata.R
 \name{gendata}
 \alias{gendata}
-\title{Generate Data Trajectories for MSM}
+\title{Generate data trajectories for MSM}
 \usage{
 gendata(
   n,
@@ -21,19 +21,19 @@ gendata(
 
 \item{format}{Character, either "long" or "wide" for the format of the output data frame.}
 
-\item{start_year}{baseline year.}
+\item{start_year}{Baseline year.}
 
 \item{total_followup}{Number of measuring times.}
 
 \item{timedep_outcome}{Logical, if TRUE, includes a time-dependent outcome.}
 
-\item{seed, }{use a specific seed value to ensure the simulated data is replicable.}
+\item{seed, }{Use a specific seed value to ensure the simulated data is replicable.}
 }
 \value{
-A data frame with generated trajectories.
+A data frame with generated data trajectories.
 }
 \description{
-Generate Data Trajectories for MSM
+Provides datasets for running examples for LCGA-MSM and LCGA-HRMSM.
 }
 \examples{
 gendata(n = 100, include_censor = FALSE, format = "wide",total_followup = 3, seed = 945)

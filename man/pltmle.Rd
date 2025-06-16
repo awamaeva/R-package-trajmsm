@@ -18,40 +18,53 @@ pltmle(
   obsdata,
   traj,
   total_followup,
-  treshold = treshold
+  treshold = treshold,
+  class_var,
+  class_pred
 )
 }
 \arguments{
-\item{formula}{specification of the model for the outcome to be fitted.}
+\item{formula}{Specification of the model for the outcome to be fitted.}
 
-\item{treatment}{time-varying treatment.}
+\item{outcome}{Name of the outcome variable.}
 
-\item{covariates}{covariates.}
+\item{treatment}{Time-varying treatment.}
 
-\item{baseline}{name of baseline covariates.}
+\item{covariates}{Covariates.}
 
-\item{ntimes_interval}{length of a time-interval (s).}
+\item{baseline}{Name of baseline covariates.}
 
-\item{number_traj}{an integer to choose the number of trajectory groups.}
+\item{ntimes_interval}{Length of a time-interval (s).}
 
-\item{time}{name of the time variable.}
+\item{number_traj}{An integer to choose the number of trajectory groups.}
 
-\item{time_values}{measuring times.}
+\item{time}{Name of the time variable.}
 
-\item{identifier}{name of the column for unique identifiant.}
+\item{time_values}{Measuring times.}
 
-\item{obsdata}{observed data in wide format.}
+\item{identifier}{Name of the column of the unique identifier.}
 
-\item{total_followup}{number of measuring times per interval.}
+\item{obsdata}{Observed data in wide format.}
+
+\item{traj}{Matrix of indicators for the trajectory groups.}
+
+\item{total_followup}{Number of measuring times per interval.}
+
+\item{treshold}{For weight truncation.}
+
+\item{class_var}{Name of the trajectory group variable.}
+
+\item{class_pred}{Vector of predicted trajectory groups.}
 }
 \value{
-\item{list_pltmle_countermeans}{Counterfactual means and influence functions with the pooled ltmle.}
+\item{list_pltmle_countermeans}{ Counterfactual means and influence functions with the pooled ltmle.}
 \item{D}{Influence functions}
 }
 \description{
-function to estimate counterfactual means for a pooled LTMLE.
+Function to estimate counterfactual means for a pooled LTMLE.
 }
 \examples{
+\donttest{
 obsdata_long = gendata(n = 2000, format = "long",total_followup = 3, seed = 945)
 baseline_var <- c("age","sex")
 covariates <- list(c("hyper2011", "bmi2011"),
@@ -80,8 +93,9 @@ traj[,1]=1
 res_pltmle = pltmle(formula = formula, outcome = "y",treatment = treatment_var,
 covariates = covariates, baseline = baseline_var, ntimes_interval = 3, number_traj = 3,
  time =  "time",time_values = time_values,identifier = "id",obsdata = obsdata,
-traj=traj, treshold = 0.99)
+traj=traj, treshold = 0.99, class_pred= class, class_var = "class")
 res_pltmle$counter_means
+}
 }
 \author{
 Awa Diop, Denis Talbot

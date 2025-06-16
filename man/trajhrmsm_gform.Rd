@@ -23,54 +23,53 @@ trajhrmsm_gform(
 )
 }
 \arguments{
-\item{degree_traj}{to specify the polynomial degree for modelling the time-varying treatment.}
+\item{degree_traj}{To specify the polynomial degree for modelling the time-varying treatment.}
 
-\item{rep}{number of repetition for the bootstrap.}
+\item{rep}{Number of repetition for the bootstrap.}
 
-\item{treatment}{name of time-varying treatment.}
+\item{treatment}{Name of the time-varying treatment.}
 
-\item{covariates}{names of time-varying covariates in a wide format.}
+\item{covariates}{Names of the time-varying covariates (should be a list).}
 
-\item{baseline}{name of baseline covariates.}
+\item{baseline}{Name of baseline covariates.}
 
-\item{ntimes_interval}{length of a time-interval (s).}
+\item{outcome}{Name of the outcome variable.}
 
-\item{total_followup}{total length of follow-up.}
+\item{ntimes_interval}{Length of a time-interval (s).}
 
-\item{time}{name of the time variable.}
+\item{total_followup}{Total length of follow-up.}
 
-\item{time_values}{measuring times.}
+\item{time}{Name of the time variable.}
 
-\item{identifier}{name of the column for unique identifiant.}
+\item{time_values}{Measuring times.}
 
-\item{var_cov}{names of the time-varying covariates in a long format.}
+\item{identifier}{Name of the column of the unique identifier.}
 
-\item{number_traj}{number of trajectory groups.}
+\item{var_cov}{Names of the time-varying variables.}
 
-\item{family}{specification of the error distribution and link function to be used in the model.}
+\item{number_traj}{Number of trajectory groups.}
 
-\item{obsdata}{data in a long format.}
+\item{family}{Specification of the error distribution and link function to be used in the model.}
 
-\item{formula}{specification of the model for the outcome to be fitted for a binomial or gaussian distribution.}
-
-\item{censor}{name of the censoring variable.}
+\item{obsdata}{Data in a long format.}
 }
 \value{
 A list containing the following components:
-  \itemize{
-  \item{results_hrmsm_gform}{Estimates of LCGA-HRMSM.}
-  \item{result_coef_boot}{Estimates obtained with bootstrap.}
-  \item{restraj}{Fitted trajectory model.}
-  \item{mean_adh}{Mean adherence per trajectory group.}
-  }
+\describe{
+  \item{results_hrmsm_gform}{ Matrix of estimates for LCGA-MSM, obtained using the g-formula method.}
+  \item{result_coef_boot}{ Matrix of estimates obtained with bootstrap.}
+  \item{restraj}{ Fitted trajectory model.}
+  \item{mean_adh}{ Matrix of mean adherence per trajectory group.}
+}
 }
 \description{
-Estimate parameters of LCGA-HRMSM Using g-formula.
+Estimate parameters of LCGA-HRMSM using g-formula.
  and bootstrap to get standard errors.
 }
 \examples{
-obsdata_long = gendata(n = 1000, format = "long", total_followup = 8,
-timedep_outcome = TRUE,  seed = 945)
+\donttest{
+obsdata_long = gendata(n = 5000, format = "long", total_followup = 8,
+timedep_outcome = TRUE,  seed = 845)
 baseline_var <- c("age","sex")
 years <- 2011:2018
 variables <- c("hyper", "bmi")
@@ -78,12 +77,13 @@ covariates <- lapply(years, function(year) {
 paste0(variables, year)})
 treatment_var <- paste0("statins", 2011:2018)
 var_cov <- c("statins","hyper", "bmi")
-reshrmsm_gform = trajhrmsm_gform(degree_traj = "linear", rep=5 ,
+reshrmsm_gform = trajhrmsm_gform(degree_traj = "linear", rep=50 ,
 treatment = treatment_var,covariates = covariates, baseline = baseline_var,
 outcome = "y",var_cov = var_cov, ntimes_interval = 6, total_followup = 8,
  time = "time",time_values = years, identifier = "id",
 number_traj = 3, family = "poisson", obsdata = obsdata_long)
 reshrmsm_gform$results_hrmsm_gform
+}
 }
 \author{
 Awa Diop Denis Talbot

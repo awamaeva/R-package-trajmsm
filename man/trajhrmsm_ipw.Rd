@@ -27,51 +27,54 @@ trajhrmsm_ipw(
 )
 }
 \arguments{
-\item{degree_traj}{to specify the polynomial degree for modelling the time-varying treatment.}
+\item{degree_traj}{To specify the polynomial degree for modelling the time-varying treatment.}
 
-\item{identifier}{name of the column for unique identifiant.}
+\item{numerator}{To choose between stabilized and unstabilized weights.}
 
-\item{baseline}{name of baseline covariates.}
+\item{identifier}{Name of the column of the unique identifier.}
 
-\item{covariates}{names of time-varying covariates in a wide format.}
+\item{baseline}{Names of the baseline covariates.}
 
-\item{treatment}{name of time-varying treatment.}
+\item{covariates}{Names of the time-varying covariates (should be a list).}
 
-\item{var_cov}{names of the time-varying covariates in a long format.}
+\item{treatment}{Name of the time-varying treatment.}
 
-\item{ntimes_interval}{length of a time-interval (s).}
+\item{outcome}{Name of the outcome variable.}
 
-\item{total_followup}{total length of follow-up.}
+\item{var_cov}{Names of the time-varying variables.}
 
-\item{time_values}{values of the time variable.}
+\item{include_censor}{Logical, if TRUE, includes censoring.}
+
+\item{ntimes_interval}{Length of a time-interval (s).}
+
+\item{total_followup}{Total length of follow-up.}
+
+\item{time}{Name of the time variable.}
+
+\item{time_values}{Values of the time variable.}
 
 \item{family}{specification of the error distribution and link function to be used in the model.}
 
-\item{censor}{name of the censoring variable.}
+\item{censor}{Name of the censoring variable.}
 
-\item{number_traj}{number of trajectory groups.}
+\item{number_traj}{Number of trajectory groups.}
 
-\item{obsdata}{data in a long format.}
+\item{obsdata}{Data in a long format.}
 
-\item{weights}{a vector of estimated weights. If NULL, the weights are computed by the function.}
+\item{weights}{A vector of estimated weights. If NULL, the weights are computed by the function.}
 
-\item{formula}{specification of the model for the outcome to be fitted for a binomial or gaussian distribution.}
+\item{treshold}{For weight truncation.}
 }
 \value{
-A list containing the following components:
-  \itemize{
-  \item{results_hrmsm_ipw}{Estimates of LCGA-HRMSM.}
-  \item{result_coef_boot}{Estimates obtained with bootstrap.}
-  \item{restraj}{Fitted trajectory model.}
-  \item{mean_adh}{Mean adherence per trajectory group.}
-  }
+Provides a matrix of estimates for LCGA-HRMSM, obtained using IPW.
 }
 \description{
-Estimate parameters of LCGA-HRMSM Using a Pooled LTMLE.
+Estimate parameters of LCGA-HRMSM using IPW.
 }
 \examples{
-obsdata_long = gendata(n = 1000, format = "long", total_followup = 8,
-timedep_outcome = TRUE,  seed = 945)
+\donttest{
+obsdata_long = gendata(n = 5000, format = "long", total_followup = 8,
+timedep_outcome = TRUE,  seed = 845)
 baseline_var <- c("age","sex")
 years <- 2011:2018
 variables <- c("hyper", "bmi")
@@ -84,8 +87,9 @@ identifier = "id", baseline = baseline_var,
 covariates = covariates, treatment = treatment_var,
 outcome = "y", var_cov= var_cov,include_censor = FALSE,
  ntimes_interval = 6,total_followup = 8, time = "time", time_values = 2011:2018,
-family = "poisson", number_traj = 3, obsdata = obsdata_long, treshold = 0.999)
+family = "poisson", number_traj = 3, obsdata = obsdata_long, treshold = 1)
 reshrmsm_ipw$res_trajhrmsm_ipw
+}
 }
 \author{
 Awa Diop, Denis Talbot
