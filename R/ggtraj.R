@@ -8,7 +8,8 @@
 #' @param traj_data Merged datasets containing observed data in long format and trajectory groups.
 #' @param \dots Additional arguments to be passed to ggplot functions.
 #' @return A ggplot object representing the trajectory groups using the observed treatment.
-#' @import ggplot2 flexmix
+#' @import flexmix
+#' @importFrom ggplot2 ggplot aes_string geom_point geom_line scale_color_brewer labs theme_minimal theme element_text scale_x_continuous
 #' @export ggtraj
 #' @examples
 #' \donttest{
