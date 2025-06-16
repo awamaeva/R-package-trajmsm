@@ -34,10 +34,12 @@ Function to split the data into multiple subsets of size s each
 one subset corresponding to one time-interval.
 }
 \examples{
+\dontrun{
 obsdata = gendata(n = 1000, format = "long", total_followup = 8, seed = 945)
 years <- 2011:2018
 res = split_data(obsdata = obsdata, total_followup = 8,
 ntimes_interval = 6,time = "time", time_values = years,identifier = "id")
+}
 }
 \author{
 Awa Diop Denis Talbot

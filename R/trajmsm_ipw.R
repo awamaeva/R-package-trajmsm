@@ -62,6 +62,7 @@ trajmsm_ipw <- function(formula1, formula2, family, identifier, treatment, covar
     weights <- inverse_probability_weighting(identifier = as.character(identifier), covariates = covariates,
                                              treatment = treatment, baseline = baseline,
                                              numerator = numerator,
+
                                              include_censor = include_censor, censor = censor, obsdata = obsdata)[[1]][, length(treatment)]
 
     obsdata$weights <- ifelse(quantile(weights, treshold, na.rm = TRUE) > weights, quantile(weights, treshold, na.rm = TRUE), weights)
@@ -99,6 +100,7 @@ trajmsm_ipw <- function(formula1, formula2, family, identifier, treatment, covar
     se <- robust_se  # Use robust standard errors for non-survival models
   }
   pvalue <- 2 * pnorm(-abs(coefs) / se)
+
   ic_lo <- coefs - 1.96 * se
   ic_up <- coefs + 1.96 * se
 
@@ -107,4 +109,3 @@ trajmsm_ipw <- function(formula1, formula2, family, identifier, treatment, covar
 
   return(restrajmsm_ipw)
 }
-
