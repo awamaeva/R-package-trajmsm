@@ -76,7 +76,6 @@ trajmsm_ipw <- function(formula1, formula2, family, identifier, treatment, covar
     args_list <- list(
       formula = formula2,
       data = obsdata,
-      cluster = as.formula(paste0("~", identifier)), # Dynamically construct cluster formula
       weights = weights
     )
 
@@ -94,8 +93,8 @@ trajmsm_ipw <- function(formula1, formula2, family, identifier, treatment, covar
   # Extracting model results
   coefs <- coef(mod_glm)
   if (family == "survival") {
-    # Extract standard errors for survival models
-    se <- coef(summary(mod_glm))[, 2]
+    # Use the fitted covariance, including robust variance when requested.
+    se <- sqrt(diag(stats::vcov(mod_glm)))
   } else {
     se <- robust_se  # Use robust standard errors for non-survival models
   }
