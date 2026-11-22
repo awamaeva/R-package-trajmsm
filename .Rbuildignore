@@ -2,3 +2,5 @@
 ^\.Rproj\.user$
 ^trajmsm_.*\.tar\.gz$
 ^trajmsm_logo\.png$
+
+^docs$

@@ -1,17 +1,35 @@
-# R-package-trajmsm
+# trajmsm
+
 <p align="center">
-  <img src="trajmsm_logo.png" alt="" width="200">
+  <img src="trajmsm_logo.png" alt="trajmsm logo" width="200">
 </p>
 
-The `trajmsm` package is inspired by the paper "Marginal Structural Models with Latent Class Growth Analysis of Treatment Trajectories," published in *Statistical Methods for Medical Research*. [Read the paper](https://journals.sagepub.com/doi/pdf/10.1177/09622802231202384). 
+**Estimate marginal structural models for longitudinal treatment trajectories.** `trajmsm` combines latent class growth analysis (LCGA) with marginal structural models (MSMs) to study treatment trajectories when confounders change over time. The package also supports history-restricted MSMs (HRMSMs) for questions about a recent treatment history and a time-indexed outcome.
 
-<p style="text-align: justify;">
-Latent Class Growth Analysis (LCGA) is increasingly used to summarize longitudinal treatment data into distinct groups. However, combining LCGA with standard methods like Cox proportional hazards models often fails to control time-dependent confounding due to covariates acting as both confounders and mediators. Our solution employs LCGA to classify individuals into latent classes based on their medication adherence patterns. We then utilize a Marginal Structural Model (MSM) to relate outcomes to these groups. The key parameter is nonparametrically defined, projecting the true MSM onto the selected working model.
+## Start here
 
-Integrating LCGA with MSM (termed LCGA-MSM) offers an effective way to describe treatment adherence and control time-dependent confounding. Common methods to estimate MSM parameters include Inverse Probability Weighting (IPW), which creates a pseudo-population for balanced treatment groups. In longitudinal settings, IPW adjusts for time-varying covariates impacted by previous exposures and selection bias.
+Install the current CRAN release:
 
-In this initial version of `trajmsm`, we estimate LCGA-MSM parameters using IPW, g-computation, and pooled Longitudinal Targeted Maximum Likelihood Estimation (LTMLE). We also introduce an extension for time-dependent outcomes, termed LCGA-History-Restricted MSM (LCGA-HRMSM), with the same three estimators.</p>
+```r
+install.packages("trajmsm")
+library(trajmsm)
+```
 
-For access to the R codes, visit our [GitHub repository](https://github.com/awamaeva/R-package-trajMSM).
+Then follow the [**getting-started vignette**](docs/getting-started.md) or run the [complete R example](docs/getting-started.R). The example uses simulated data to build trajectory groups, compute and inspect treatment weights, fit an MSM, and interpret the estimates. The vignette also explains when to use long or wide data and which function to start with.
 
-For additional insights on trajectory analysis, check out the [trajectory_analysis repository](https://github.com/awamaeva/trajectory_analysis).
+## Choose a function
+
+| Goal | Functions |
+| --- | --- |
+| Simulate data, fit or plot trajectory groups | `gendata()`, `build_traj()`, `ggtraj()` |
+| Estimate longitudinal treatment weights, optionally including censoring | `inverse_probability_weighting()` |
+| Fit an MSM for a full treatment history | `trajmsm_ipw()`, `trajmsm_gform()`, `trajmsm_pltmle()` |
+| Fit an MSM for rolling windows of recent treatment history | `trajhrmsm_ipw()`, `trajhrmsm_gform()`, `trajhrmsm_pltmle()` |
+
+Use `help(package = "trajmsm")` for the function reference.
+
+## Reference
+
+Diop A, Sirois C, Guertin JR, Schnitzer ME, Candas B, Cossette B, Poirier P, Brophy J, Mésidor M, Blais C, Talbot D. (2023). Marginal Structural Models with Latent Class Growth Analysis of Treatment Trajectories. *Statistical Methods in Medical Research*. [doi:10.1177/09622802231202384](https://doi.org/10.1177/09622802231202384).
+
+For related methodological examples, see the [trajectory analysis repository](https://github.com/awamaeva/trajectory_analysis).
