@@ -76,7 +76,6 @@ trajmsm_ipw <- function(formula1, formula2, family, identifier, treatment, covar
     args_list <- list(
       formula = formula2,
       data = obsdata,
-      cluster = as.formula(paste0("~", identifier)), # Dynamically construct cluster formula
       weights = weights
     )
 
