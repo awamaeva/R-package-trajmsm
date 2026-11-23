@@ -60,3 +60,7 @@ th { background: var(--tint); color: var(--heading); }
   h2, h3 { break-after: avoid; }
 }
 .snapshot { border-left: .25rem solid var(--link); background: var(--tint); padding: .15rem 1rem; margin: 1.25rem 0; }
+
+.equation-note { padding: .15rem .9rem; margin: 1.15rem 0; background: var(--tint); border-left: .2rem solid var(--link); }
+.equation-display { overflow-x: auto; overflow-y: hidden; padding: .5rem 0; font-size: 1.08em; }
+.equation-display math { min-width: max-content; }

@@ -6,9 +6,25 @@
 
 A treatment history records what a person received at each visit. Four visits with a binary treatment already allow 16 different histories. **Latent class growth analysis (LCGA)** summarizes the treatment patterns observed in the data into a few groups. Those groups make the patterns easier to describe, but grouping does not adjust for confounding.
 
+**Why 16 histories?**
+
+$$
+2\times2\times2\times2=2^4=16.
+$$
+
+At every visit the person can be treated or untreated. Multiplying the two choices across four visits counts all complete histories, whether or not every history appears in the observed sample.
+
 A **marginal structural model (MSM)** describes how the population-average outcome would differ under specified treatment histories. For example, a health measure can affect whether someone is treated next and their eventual outcome, while itself being affected by earlier treatment. Ignoring it can leave confounding, but ordinary outcome regression that conditions on it can block part of an earlier treatment's effect. The worked example uses inverse probability weighting (IPW) for the treatment decisions over time.
 
 In the [original LCGA-MSM methods paper (Diop et al., 2023)](https://doi.org/10.1177/09622802231202384), LCGA is fitted to observed histories, then the fitted classification rule maps each hypothetical treatment history to a group. The formal target is a **projection**: it summarizes the history-specific mean outcomes under those hypothetical histories using a simpler, group-based working MSM. The treatment histories, not the latent group labels, are the interventions. Two histories in one group can still have different effects; a group contrast summarizes the histories under the chosen working model and does not estimate the effect of assigning someone to a class.
+
+**How is a history assigned to a group?**
+
+$$
+g(\bar a)=\underset{j\in\{1,\ldots,J\}}{\operatorname{argmax}}\;\widehat{P}(C=j\mid\bar A=\bar a).
+$$
+
+The fitted LCGA computes a posterior probability for each of its J classes (C). For a history ā, g chooses the class with the largest fitted probability. This applies to observed histories and to hypothetical ones; it is a classification rule, not a treatment assignment rule.
 
 ## A worked example: from treatment histories to a weighted estimate
 
@@ -68,6 +84,16 @@ weights_by_time <- inverse_probability_weighting(
 w <- weights_by_time[, length(years)]
 ```
 
+**What goes into the stabilized treatment weight?**
+
+$$
+SW_i=\prod_{t=1}^4\frac{\widehat p(A_{it}=a_{it}\mid\bar A_{i,t-1})}{\widehat p(A_{it}=a_{it}\mid\bar A_{i,t-1},V_i,\bar L_{it})}.
+$$
+
+At each visit t for person i, use the fitted probability of the treatment actually received (aᵢₜ). The numerator conditions on earlier treatment only (at visit 1 it is unconditional). The denominator also includes baseline covariates Vᵢ (age and sex here) and measured time-varying covariates L through the current visit, taken before its treatment decision. Multiply the four ratios to get the final weight; this example does not add censoring weights. See the weight code just above.
+
+Illustration (not simulation output): If the person was untreated at a visit and the numerator and denominator models give probabilities of treatment of 0.40 and 0.70, use the probabilities of no treatment: (1 − 0.40) / (1 − 0.70) = 2. That visit doubles the cumulative weight so far.
+
 The first list element is a matrix of cumulative weights with one column per occasion and one row per input person. The final column weights the full treatment history in this example. Keep those weights aligned to the exact rows passed to the outcome model. If you reorder or subset the data, explicitly reindex weights by a unique person ID before fitting; the wrapper does not realign weights by name.
 
 Inspect the weight distribution, large weights, and effective sample size, overall and by group. The script calculates effective sample size as `sum(w)^2 / sum(w^2)`. It is a weight-concentration summary, not a literal number of people or a guarantee of overlap, balance, or identification. For a real study, also check treatment probabilities and covariate balance at each decision point, address missingness and censoring explicitly, and inspect whether important histories have treatment support.
@@ -82,6 +108,14 @@ se <- sqrt(diag(sandwich::vcovCL(fit, cluster = ~ id)))
 ```
 
 Here the outcome model is fitted directly with `stats::glm()`, so the weights and variance calculation are visible. The script presents the diagnosed weights first, then a separately labeled sensitivity fit using `pmin(w, quantile(w, .99))` to cap the upper tail. This cap illustrates a comparison, not a default recommendation.
+
+**From log odds to an odds ratio**
+
+$$
+\log\!\left(\frac{\mu(\bar a)}{1-\mu(\bar a)}\right)=\beta_0+\beta_1\,\mathbf{1}\{g(\bar a)=2\},\qquad \mathrm{OR}=e^{\beta_1}\approx e^{-0.975}\approx0.377.
+$$
+
+Here μ(ā) is the working-model event probability for history ā. The indicator equals one for group 2 and zero for the reference group 1. The weighted logistic mean model (the logit link in the quasibinomial fit above) estimates β₁ as about −0.975 in the simulated example. Exponentiating yields the modeled odds in group 2 divided by those in group 1, not a ratio of event probabilities.
 
 The script builds a coefficient table with estimates, person-ID–clustered standard errors and 95% Wald confidence limits. Here the intercept is the modeled log odds in the reference trajectory group, and the trajectory coefficient is a log odds ratio against that group. Exponentiate the coefficient and confidence limits to report an odds ratio and its interval, not the standard error; this is **not** a risk ratio. The standard errors reported by this fit do not, by themselves, establish that first-stage weight and latent-class estimation uncertainty has been fully propagated.
 
