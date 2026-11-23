@@ -82,12 +82,15 @@ trajmsm_ipw <- function(formula1, formula2, family, identifier, treatment, covar
     # Use do.call to invoke coxph with dynamically constructed arguments
     mod_glm <- do.call("coxph", args_list)
   } else {
-    # Fit a standard glm model
-    mod_glm <- glm(formula = formula1, data = obsdata, weights = obsdata$weights, family = family)
+    if (missing(identifier) || !is.character(identifier) ||
+        length(identifier) != 1L || is.na(identifier) ||
+        !nzchar(identifier) || !identifier %in% names(obsdata)) {
+      stop("'identifier' must name a column in 'obsdata'.", call. = FALSE)
+    }
 
-    # Compute robust standard errors using the sandwich package
-    cluster_formula <- as.formula(paste0("~", identifier))
-    robust_se <- sqrt(diag(vcovCL(mod_glm, cluster = cluster_formula)));
+    # Resolve weights and clusters from the fit data, not the caller's scope.
+    mod_glm <- glm(formula = formula1, data = obsdata, weights = weights, family = family)
+    robust_se <- sqrt(diag(vcovCL(mod_glm, cluster = obsdata[[identifier]])))
   }
 
   # Extracting model results

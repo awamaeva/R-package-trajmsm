@@ -1,3 +1,13 @@
+# trajmsm 0.1.7
+
+- Fix weight handling in `trajmsm_ipw()` for binary and Gaussian outcomes.
+  These models use the supplied or computed weights and cluster by the
+  specified ID column, regardless of how the caller names its data. Results
+  may change if a previous fit silently ignored weights or used a different
+  clustering column.
+- Retain the 0.1.6 Cox inference correction described below. Function
+  arguments, return values, and `treshold` behavior are unchanged.
+
 # trajmsm 0.1.6
 
 - Fix standard errors, Wald p-values, and log-hazard confidence intervals in
