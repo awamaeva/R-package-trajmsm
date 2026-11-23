@@ -8,9 +8,7 @@ A treatment history records what a person received at each visit. Four visits wi
 
 **Why 16 histories?**
 
-$$
-2\times2\times2\times2=2^4=16.
-$$
+![Two choices at each of four visits: 2 times 2 times 2 times 2 equals 16 possible histories.](equations/histories.svg)
 
 At every visit the person can be treated or untreated. Multiplying the two choices across four visits counts all complete histories, whether or not every history appears in the observed sample.
 
@@ -20,9 +18,7 @@ In the [original LCGA-MSM methods paper (Diop et al., 2023)](https://doi.org/10.
 
 **How is a history assigned to a group?**
 
-$$
-g(\bar a)=\underset{j\in\{1,\ldots,J\}}{\operatorname{argmax}}\;\widehat{P}(C=j\mid\bar A=\bar a).
-$$
+![For history a-bar, choose the class j whose fitted posterior probability is largest.](equations/assignment.svg)
 
 The fitted LCGA computes a posterior probability for each of its J classes (C). For a history ā, g chooses the class with the largest fitted probability. This applies to observed histories and to hypothetical ones; it is a classification rule, not a treatment assignment rule.
 
@@ -86,9 +82,7 @@ w <- weights_by_time[, length(years)]
 
 **What goes into the stabilized treatment weight?**
 
-$$
-SW_i=\prod_{t=1}^4\frac{\widehat p(A_{it}=a_{it}\mid\bar A_{i,t-1})}{\widehat p(A_{it}=a_{it}\mid\bar A_{i,t-1},V_i,\bar L_{it})}.
-$$
+![Stabilized weight for person i: multiply the four ratios of the fitted probability of observed treatment given prior treatment, to that given prior treatment, baseline covariates and measured covariate history through the current visit.](equations/weights.svg)
 
 At each visit t for person i, use the fitted probability of the treatment actually received (aᵢₜ). The numerator conditions on earlier treatment only (at visit 1 it is unconditional). The denominator also includes baseline covariates Vᵢ (age and sex here) and measured time-varying covariates L through the current visit, taken before its treatment decision. Multiply the four ratios to get the final weight; this example does not add censoring weights. See the weight code just above.
 
@@ -111,9 +105,7 @@ Here the outcome model is fitted directly with `stats::glm()`, so the weights an
 
 **From log odds to an odds ratio**
 
-$$
-\log\!\left(\frac{\mu(\bar a)}{1-\mu(\bar a)}\right)=\beta_0+\beta_1\,\mathbf{1}\{g(\bar a)=2\},\qquad \mathrm{OR}=e^{\beta_1}\approx e^{-0.975}\approx0.377.
-$$
+![The log odds equal beta zero plus beta one times the indicator for group 2. The odds ratio is exp(beta one); exp(minus 0.975) is approximately 0.377.](equations/odds.svg)
 
 Here μ(ā) is the working-model event probability for history ā. The indicator equals one for group 2 and zero for the reference group 1. The weighted logistic mean model (the logit link in the quasibinomial fit above) estimates β₁ as about −0.975 in the simulated example. Exponentiating yields the modeled odds in group 2 divided by those in group 1, not a ratio of event probabilities.
 

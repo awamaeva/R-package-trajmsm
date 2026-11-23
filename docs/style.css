@@ -64,3 +64,4 @@ th { background: var(--tint); color: var(--heading); }
 .equation-note { padding: .15rem .9rem; margin: 1.15rem 0; background: var(--tint); border-left: .2rem solid var(--link); }
 .equation-display { overflow-x: auto; overflow-y: hidden; padding: .5rem 0; font-size: 1.08em; }
 .equation-display math { min-width: max-content; }
+.equation-display img { display: block; width: auto; max-width: 100%; height: auto; }
