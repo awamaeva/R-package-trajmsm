@@ -161,10 +161,32 @@ justification. The script prints <code>table(classes$class)</code> and
 candidate models fitted to the same data; also examine separation,
 stability and substantive usefulness rather than choosing the number
 from BIC alone.</p>
-<p>Add <code>--plot</code> to the command above to save
-<code>observed-trajectories.pdf</code> in your current working directory. The plot shows observed
-proportions treated within assigned classes at each visit, not fitted
-trajectories or causal effects.</p>
+<h3 id="plot-observed-trajectories">Plot observed trajectories by group</h3>
+<p>Join each person&#x27;s assigned group back to their visits by ID. Average the binary treatment within each group and year, then pass those eight means to the package&#x27;s <code>ggtraj()</code> helper.</p>
+<figure class="trajectory-figure">
+<img src="figures/observed-trajectories.svg" width="374" height="295" alt="Line chart of observed treatment proportions from 2011 to 2014. Group 1: 87%, 55%, 0%, 0%; group 2: 64%, 63%, 77%, 78%.">
+<figcaption>Observed proportion treated at each visit in the simulated cohort, grouped by LCGA assignment. Group 1 falls to zero by 2013; group 2 stays above 60% across all four visits. The lines connect observed proportions. They are not fitted treatment probabilities or estimated treatment effects.</figcaption>
+</figure>
+<p>Run this after the complete script has created <code>long</code> and <code>wide</code>:</p>
+<pre class="r" tabindex="0" aria-label="R code to plot observed trajectories"><code># Join by ID; use the same relevelled group labels as the outcome analysis.
+plot_data &lt;- transform(long, group = wide$trajectory[match(id, wide$id)])
+stopifnot(!anyNA(plot_data$group))
+# ggtraj plots supplied values, so compute the proportions first.
+visit_means &lt;- aggregate(statins ~ time + group, data = plot_data, FUN = mean)
+p &lt;- trajmsm::ggtraj(
+  traj_data = visit_means, treatment = "statins", time = "time",
+  identifier = "id", class = "group"
+) +
+  ggplot2::scale_color_manual(values = c("#193b68", "#984818")) +
+  ggplot2::scale_y_continuous(
+    limits = c(0, 1), breaks = seq(0, 1, .25),
+    labels = function(x) paste0(round(100 * x), "%")
+  ) +
+  ggplot2::labs(title = NULL, x = "Visit year", y = "Proportion treated",
+                color = "Group", shape = "Group", linetype = "Group") +
+  ggplot2::theme(panel.grid.minor = ggplot2::element_blank())
+print(p)</code></pre>
+<p>Run the complete script with <code>--plot</code> to save <code>observed-trajectories.svg</code> and <code>observed-trajectories.pdf</code> in your working directory. In an interactive R session, sourcing the script displays the plot instead.</p>
 <h2 id="3-prepare-the-wide-data-and-diagnose-treatment-weights">3.
 Prepare the wide data and diagnose treatment weights</h2>
 <p>The script reshapes the visit-level variables to names like

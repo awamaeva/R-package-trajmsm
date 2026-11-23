@@ -63,7 +63,38 @@ trajectory <- build_traj(
 
 Check that the fit recovered the requested number of groups, inspect group sizes and posterior assignment probabilities, and review whether the trajectories make sense for the study. Class numbers are arbitrary. The script joins the assignment to the person-level data **by ID**, not by row order, and uses the group with lower observed average adherence as the reference for illustration. Choosing a class count and reference for a real analysis calls for scientific justification. The script prints `table(classes$class)` and `BIC(trajectory$traj_model)`. Lower BIC can help compare candidate models fitted to the same data; also examine separation, stability and substantive usefulness rather than choosing the number from BIC alone.
 
-Add `--plot` to the command above to save `observed-trajectories.pdf`. The plot shows observed proportions treated within assigned classes at each visit, not fitted trajectories or causal effects.
+### Plot observed trajectories by group
+
+Join each person's assigned group back to their visits by ID. Average the binary treatment within each group and year, then pass those eight means to the package's `ggtraj()` helper.
+
+![Line chart of observed treatment proportions from 2011 to 2014. Group 1: 87%, 55%, 0%, 0%; group 2: 64%, 63%, 77%, 78%.](figures/observed-trajectories.svg)
+
+Observed proportion treated at each visit in the simulated cohort, grouped by LCGA assignment. Group 1 falls to zero by 2013; group 2 stays above 60% across all four visits. The lines connect observed proportions. They are not fitted treatment probabilities or estimated treatment effects.
+
+Run this after the complete script has created `long` and `wide`:
+
+```r
+# Join by ID; use the same relevelled group labels as the outcome analysis.
+plot_data <- transform(long, group = wide$trajectory[match(id, wide$id)])
+stopifnot(!anyNA(plot_data$group))
+# ggtraj plots supplied values, so compute the proportions first.
+visit_means <- aggregate(statins ~ time + group, data = plot_data, FUN = mean)
+p <- trajmsm::ggtraj(
+  traj_data = visit_means, treatment = "statins", time = "time",
+  identifier = "id", class = "group"
+) +
+  ggplot2::scale_color_manual(values = c("#193b68", "#984818")) +
+  ggplot2::scale_y_continuous(
+    limits = c(0, 1), breaks = seq(0, 1, .25),
+    labels = function(x) paste0(round(100 * x), "%")
+  ) +
+  ggplot2::labs(title = NULL, x = "Visit year", y = "Proportion treated",
+                color = "Group", shape = "Group", linetype = "Group") +
+  ggplot2::theme(panel.grid.minor = ggplot2::element_blank())
+print(p)
+```
+
+Run the complete script with `--plot` to save `observed-trajectories.svg` and `observed-trajectories.pdf` in your working directory. In an interactive R session, sourcing the script displays the plot instead.
 
 ## 3. Prepare the wide data and diagnose treatment weights
 

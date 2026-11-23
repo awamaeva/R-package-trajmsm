@@ -65,3 +65,7 @@ th { background: var(--tint); color: var(--heading); }
 .equation-display { overflow-x: auto; overflow-y: hidden; padding: .5rem 0; font-size: 1.08em; }
 .equation-display math { min-width: max-content; }
 .equation-display img { display: block; width: auto; max-width: 100%; height: auto; }
+
+.trajectory-figure { margin: 1.25rem 0; }
+.trajectory-figure img { display: block; width: min(100%, 28rem); height: auto; }
+.trajectory-figure figcaption { color: var(--muted); line-height: 1.55; margin-top: .55rem; font-size: .92rem; max-width: 62ch; }

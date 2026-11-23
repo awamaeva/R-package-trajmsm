@@ -29,18 +29,35 @@ observed_adherence <- rowMeans(wide[paste0("statins", years)])
 adherence_by_class <- tapply(observed_adherence, wide$trajectory, mean)
 wide$trajectory <- relevel(wide$trajectory, ref = names(which.min(adherence_by_class)))
 
-# Optional plot: observed averages within allocated classes, not model predictions.
+# Optional figure: observed group proportions, not fitted probabilities.
 if (interactive() || "--plot" %in% commandArgs(trailingOnly = TRUE)) {
-  write_pdf <- !interactive()
-  if (write_pdf) pdf("observed-trajectories.pdf", width = 7, height = 4.5)
-  group_by_visit <- with(long, tapply(statins, list(time, wide$trajectory[match(id, wide$id)]), mean))
-  matplot(years, group_by_visit, type = "b", lty = 1:2, pch = c(1, 19),
-          col = "black", xaxt = "n", ylim = c(0, 1), xlab = "Year",
-          ylab = "Observed proportion treated")
-  axis(1, at = years)
-  legend("bottomright", legend = paste("Class", colnames(group_by_visit)),
-         lty = 1:2, pch = c(1, 19), col = "black", bty = "n")
-  if (write_pdf) dev.off()
+  # Join by ID; use the same relevelled group labels as the outcome analysis.
+  plot_data <- transform(long, group = wide$trajectory[match(id, wide$id)])
+  stopifnot(!anyNA(plot_data$group))
+  # ggtraj plots supplied values, so compute the proportions first.
+  visit_means <- aggregate(statins ~ time + group, data = plot_data, FUN = mean)
+  p <- trajmsm::ggtraj(
+    traj_data = visit_means, treatment = "statins", time = "time",
+    identifier = "id", class = "group"
+  ) +
+    ggplot2::scale_color_manual(values = c("#193b68", "#984818")) +
+    ggplot2::scale_y_continuous(
+      limits = c(0, 1), breaks = seq(0, 1, .25),
+      labels = function(x) paste0(round(100 * x), "%")
+    ) +
+    ggplot2::labs(title = NULL, x = "Visit year", y = "Proportion treated",
+                  color = "Group", shape = "Group", linetype = "Group") +
+    ggplot2::theme(panel.grid.minor = ggplot2::element_blank())
+
+  if (interactive()) {
+    print(p)
+  } else {
+    grDevices::svg("observed-trajectories.svg", width = 5.2, height = 4.1,
+                   bg = "white")
+    print(p)
+    grDevices::dev.off()
+    ggplot2::ggsave("observed-trajectories.pdf", p, width = 5.2, height = 4.1)
+  }
 }
 
 treatment <- paste0("statins", years)
