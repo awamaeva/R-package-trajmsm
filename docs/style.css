@@ -35,7 +35,7 @@ article > h2:first-child { margin-top: 0; }
 article > h2:not(:first-child) { border-top: 1px solid var(--line); padding-top: 1.35rem; }
 h3 { font-size: 1.35rem; margin-top: 2rem; }
 p, ul { margin-block: .85rem; }
-article > h2:first-child + p { border-left: .25rem solid var(--link); background: var(--tint); padding: .7rem 1rem; }
+article > .learning-goal { border-left: .25rem solid var(--link); background: var(--tint); padding: .7rem 1rem; }
 code { font: .91em ui-monospace, SFMono-Regular, Consolas, monospace; }
 :not(pre) > code { color: #12385a; overflow-wrap: anywhere; }
 pre { margin-block: 1.15rem; background: var(--tint); border: 1px solid var(--line); border-radius: .35rem; padding: .85rem 1rem; overflow: auto; line-height: 1.6; white-space: pre; }

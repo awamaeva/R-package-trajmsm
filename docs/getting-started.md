@@ -2,6 +2,14 @@
 
 [Package home](../README.md) · [Complete R script](getting-started.R)
 
+## Why combine trajectory analysis and marginal structural models?
+
+A treatment history records what a person received at each visit. Four visits with a binary treatment already allow 16 different histories. **Latent class growth analysis (LCGA)** summarizes the treatment patterns observed in the data into a few groups. Those groups make the patterns easier to describe, but grouping does not adjust for confounding.
+
+A **marginal structural model (MSM)** describes how the population-average outcome would differ under specified treatment histories. For example, a health measure can affect whether someone is treated next and their eventual outcome, while itself being affected by earlier treatment. Ignoring it can leave confounding, but ordinary outcome regression that conditions on it can block part of an earlier treatment's effect. The worked example uses inverse probability weighting (IPW) for the treatment decisions over time.
+
+In the [original LCGA-MSM methods paper (Diop et al., 2023)](https://doi.org/10.1177/09622802231202384), LCGA is fitted to observed histories, then the fitted classification rule maps each hypothetical treatment history to a group. The formal target is a **projection**: it summarizes the history-specific mean outcomes under those hypothetical histories using a simpler, group-based working MSM. The treatment histories, not the latent group labels, are the interventions. Two histories in one group can still have different effects; a group contrast summarizes the histories under the chosen working model and does not estimate the effect of assigning someone to a class.
+
 ## A worked example: from treatment histories to a weighted estimate
 
 **Learning goal.** Fit a latent class growth analysis–marginal structural model (LCGA-MSM) using inverse probability weighting (IPW). Along the way, check how the data layout, trajectory assignments, and weights affect the analysis. The data are simulated; the results do not estimate an effect in a real population.
@@ -73,11 +81,11 @@ fit <- glm(y ~ trajectory, family = quasibinomial(), data = wide, weights = iptw
 se <- sqrt(diag(sandwich::vcovCL(fit, cluster = ~ id)))
 ```
 
-Here the outcome model is fitted directly with `stats::glm()`, so the weights and variance calculation are visible. The script presents the diagnosed weights first, then a separately labeled sensitivity fit using `pmin(w, quantile(w, .99))` to cap the upper tail. This cap illustrates a comparison, not a default recommendation. In particular, do not assume that the wrapper’s historical `treshold` argument applies the same cap across releases and branches. In versions 0.1.5 and 0.1.6, `trajmsm_ipw()` can fail or use the wrong weights for binary and Gaussian outcomes depending on how the caller’s data are named. Version 0.1.7 fixes that lookup. The direct fit above works across these versions and shows the model and variance calculation explicitly.
+Here the outcome model is fitted directly with `stats::glm()`, so the weights and variance calculation are visible. The script presents the diagnosed weights first, then a separately labeled sensitivity fit using `pmin(w, quantile(w, .99))` to cap the upper tail. This cap illustrates a comparison, not a default recommendation.
 
 The script builds a coefficient table with estimates, person-ID–clustered standard errors and 95% Wald confidence limits. Here the intercept is the modeled log odds in the reference trajectory group, and the trajectory coefficient is a log odds ratio against that group. Exponentiate the coefficient and confidence limits to report an odds ratio and its interval, not the standard error; this is **not** a risk ratio. The standard errors reported by this fit do not, by themselves, establish that first-stage weight and latent-class estimation uncertainty has been fully propagated.
 
-LCGA is a summary of treatment histories, not a randomization step and not itself a treatment intervention. A causal interpretation depends on defining the intervention and target parameter, consistency, sequential exchangeability, positivity, and appropriate nuisance and working-model choices. For the formal projection estimand, see [Diop et al. (2023)](https://doi.org/10.1177/09622802231202384).
+LCGA is a summary of treatment histories, not a randomization step and not itself a treatment intervention. A causal interpretation depends on defining the intervention and target parameter, consistency, sequential exchangeability, positivity, and appropriate nuisance and working-model choices.
 
 ### Optional: use the package wrapper (0.1.7 or newer)
 
