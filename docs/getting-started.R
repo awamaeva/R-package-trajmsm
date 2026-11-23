@@ -83,6 +83,19 @@ print(estimates)
 print(exp(estimates[grepl("^trajectory", rownames(estimates)),
               c("Estimate", "Lower CI", "Upper CI"), drop = FALSE]))
 
+# Compare the package wrapper with the same explicit fit when the lookup fix
+# is installed. Older versions still run the direct fit above.
+if (packageVersion("trajmsm") >= "0.1.7") {
+  wrapped <- trajmsm_ipw(
+    formula1 = y ~ trajectory, family = "quasibinomial", identifier = "id",
+    obsdata = wide, weights = wide$iptw
+  )
+  direct_se <- sqrt(diag(sandwich::vcovCL(fit, cluster = ~ id)))
+  stopifnot(isTRUE(all.equal(wrapped[, "Estimate"], coef(fit))),
+            isTRUE(all.equal(wrapped[, "Std.Error"], direct_se)))
+  message("trajmsm_ipw() agrees with the direct weighted fit.")
+}
+
 # Optional illustrative sensitivity fit: cap only the upper tail.
 # Choose and justify any cap for a real study before interpreting its estimate.
 cap <- unname(quantile(w, .99))

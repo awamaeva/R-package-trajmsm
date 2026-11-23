@@ -1,8 +1,14 @@
-# Getting started with trajmsm
+# trajmsm companion guide
 
-**Goal.** Fit one LCGA-MSM by inverse probability weighting (IPW), and understand what each data transformation and diagnostic is for. The data are simulated. Nothing in this example estimates a real treatment effect.
+[Package home](../README.md) · [Complete R script](getting-started.R)
 
-[Run the complete example](getting-started.R) from the repository root after installing `trajmsm`:
+## A worked example: from treatment histories to a weighted estimate
+
+**Learning goal.** Fit a latent class growth analysis–marginal structural model (LCGA-MSM) using inverse probability weighting (IPW). Along the way, check how the data layout, trajectory assignments, and weights affect the analysis. The data are simulated; the results do not estimate an effect in a real population.
+
+**Follow the analysis:** [Choose the data layout](#1-pick-the-analysis-and-the-data-format) · [Fit trajectories](#2-fit-the-trajectory-model-in-long-format) · [Check the weights](#3-prepare-the-wide-data-and-diagnose-treatment-weights) · [Fit and interpret the model](#4-fit-and-interpret-the-weighted-model).
+
+Run the complete example from the repository root after installing `trajmsm`:
 
 ```sh
 Rscript docs/getting-started.R
@@ -67,11 +73,29 @@ fit <- glm(y ~ trajectory, family = quasibinomial(), data = wide, weights = iptw
 se <- sqrt(diag(sandwich::vcovCL(fit, cluster = ~ id)))
 ```
 
-Here the outcome model is fitted directly with `stats::glm()`, so the weights and variance calculation are visible. The script presents the diagnosed weights first, then a separately labeled sensitivity fit using `pmin(w, quantile(w, .99))` to cap the upper tail. This cap illustrates a comparison, not a default recommendation. In particular, do not assume that the wrapper’s historical `treshold` argument applies the same cap across releases and branches. The binary `trajmsm_ipw()` branch in version 0.1.6 can also fail to resolve the weights depending on how the formula’s environment resolves the data; the direct fit avoids this formula-scoping issue.
+Here the outcome model is fitted directly with `stats::glm()`, so the weights and variance calculation are visible. The script presents the diagnosed weights first, then a separately labeled sensitivity fit using `pmin(w, quantile(w, .99))` to cap the upper tail. This cap illustrates a comparison, not a default recommendation. In particular, do not assume that the wrapper’s historical `treshold` argument applies the same cap across releases and branches. In versions 0.1.5 and 0.1.6, `trajmsm_ipw()` can fail or use the wrong weights for binary and Gaussian outcomes depending on how the caller’s data are named. Version 0.1.7 fixes that lookup. The direct fit above works across these versions and shows the model and variance calculation explicitly.
 
 The script builds a coefficient table with estimates, person-ID–clustered standard errors and 95% Wald confidence limits. Here the intercept is the modeled log odds in the reference trajectory group, and the trajectory coefficient is a log odds ratio against that group. Exponentiate the coefficient and confidence limits to report an odds ratio and its interval, not the standard error; this is **not** a risk ratio. The standard errors reported by this fit do not, by themselves, establish that first-stage weight and latent-class estimation uncertainty has been fully propagated.
 
 LCGA is a summary of treatment histories, not a randomization step and not itself a treatment intervention. A causal interpretation depends on defining the intervention and target parameter, consistency, sequential exchangeability, positivity, and appropriate nuisance and working-model choices. For the formal projection estimand, see [Diop et al. (2023)](https://doi.org/10.1177/09622802231202384).
+
+### Optional: use the package wrapper (0.1.7 or newer)
+
+With the same outcome formula and ID-aligned weights from above, the wrapper should reproduce the direct fit’s estimates and clustered standard errors:
+
+```r
+if (packageVersion("trajmsm") >= "0.1.7") {
+  wrapped <- trajmsm_ipw(
+    formula1 = y ~ trajectory, family = "quasibinomial", identifier = "id",
+    obsdata = wide, weights = wide$iptw
+  )
+  direct_se <- sqrt(diag(sandwich::vcovCL(fit, cluster = ~ id)))
+  stopifnot(isTRUE(all.equal(wrapped[, "Estimate"], coef(fit))),
+            isTRUE(all.equal(wrapped[, "Std.Error"], direct_se)))
+}
+```
+
+Both fits deliberately use the quasibinomial family with its default logit link. In base R, binomial GLMs can warn about non-integer successes when supplied fractional inverse-probability weights: these weights are not counts of binomial trials. The quasibinomial fit keeps the same logit mean model without that count warning. Inference here uses the explicit person-clustered sandwich covariance.
 
 ## If you get stuck
 
