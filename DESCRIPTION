@@ -2,7 +2,7 @@ Package: trajmsm
 Type: Package
 Title: Marginal Structural Models with Latent Class Growth Analysis of
         Treatment Trajectories
-Version: 0.1.6
+Version: 0.1.7
 Authors@R: c(
   person("Awa", "Diop", email = "awa.diop.2@ulaval.ca", role = c("aut", "cre")),
   person("Denis", "Talbot", role = "aut"))
