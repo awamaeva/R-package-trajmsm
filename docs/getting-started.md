@@ -18,7 +18,7 @@ In the [original LCGA-MSM methods paper (Diop et al., 2023)](https://doi.org/10.
 
 **How is a history assigned to a group?**
 
-![For history a-bar, choose the class j whose fitted posterior probability is largest.](equations/assignment.svg)
+![For history a-bar, choose the class j whose posterior probability under the LCGA model is largest.](equations/assignment-rule.svg)
 
 The fitted LCGA computes a posterior probability for each of its J classes (C). For a history ā, g chooses the class with the largest fitted probability. This applies to observed histories and to hypothetical ones; it is a classification rule, not a treatment assignment rule.
 
