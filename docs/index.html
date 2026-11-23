@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="A worked R tutorial by Awa Diop on fitting treatment trajectories and a weighted marginal structural model with trajmsm.">
+<meta name="author" content="Awa Diop">
+<title>trajmsm companion guide · Awa Diop</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body id="top">
+<a class="skip" href="#main">Skip to tutorial</a>
+<header class="masthead">
+  <div class="width">
+    <p class="eyebrow">R PACKAGE COMPANION · WORKED TUTORIAL</p>
+    <h1>trajmsm companion guide</h1>
+    <p class="byline">Awa Diop</p>
+    <div class="actions"><a class="primary" href="getting-started.R" download>Download complete R script</a><a href="https://cran.r-project.org/package=trajmsm">Package on CRAN</a></div>
+  </div>
+</header>
+<div class="width layout">
+<nav aria-labelledby="toc-label">
+  <p class="toc-title" id="toc-label">On this page</p>
+  <ul><li><a href="#a-worked-example-from-treatment-histories-to-a-weighted-estimate">A worked example: from treatment histories to a weighted estimate</a></li>
+<li><a href="#1-pick-the-analysis-and-the-data-format">1. Pick the analysis and the data format</a></li>
+<li><a href="#2-fit-the-trajectory-model-in-long-format">2. Fit the trajectory model in long format</a></li>
+<li><a href="#3-prepare-the-wide-data-and-diagnose-treatment-weights">3. Prepare the wide data and diagnose treatment weights</a></li>
+<li><a href="#4-fit-and-interpret-the-weighted-model">4. Fit and interpret the weighted model</a></li>
+<li><a href="#if-you-get-stuck">If you get stuck</a></li></ul>
+</nav>
+<main id="main" tabindex="-1">
+<article>
+<h2 id="a-worked-example-from-treatment-histories-to-a-weighted-estimate">A
+worked example: from treatment histories to a weighted estimate</h2>
+<p><strong>Learning goal.</strong> Fit a latent class growth
+analysis–marginal structural model (LCGA-MSM) using inverse probability
+weighting (IPW). Along the way, check how the data layout, trajectory
+assignments, and weights affect the analysis. The data are simulated;
+the results do not estimate an effect in a real population.</p>
+<h3 id="run-the-example">Install the package and run the example</h3>
+<p>Run these lines at the R prompt:</p>
+<pre class="r" tabindex="0" aria-label="R installation commands"><code>install.packages("trajmsm")
+library(trajmsm)</code></pre>
+<p>If you downloaded the script, open a terminal in the folder where you saved it:</p>
+<pre class="sh" tabindex="0" aria-label="Command for a downloaded script"><code>Rscript getting-started.R</code></pre>
+<p>If you cloned the package repository, run this from its root instead:</p>
+<pre class="sh" tabindex="0" aria-label="Command from the repository root"><code>Rscript docs/getting-started.R</code></pre>
+<p>In RStudio, open the script and source it instead. It uses base R,
+<code>trajmsm</code> and its dependency <code>sandwich</code>, and
+prints the session information for reproducibility.</p>
+<h2 id="1-pick-the-analysis-and-the-data-format">1. Pick the analysis
+and the data format</h2>
+<div class="table-wrap" role="region" aria-label="Analysis tasks and data formats" tabindex="0"><table>
+<thead>
+<tr class="header">
+<th scope="col">Question or task</th>
+<th scope="col">Input layout</th>
+<th scope="col">Starting function</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Which patterns summarize the observed treatment histories?</td>
+<td><strong>Long:</strong> one row per person and visit</td>
+<td><code>build_traj()</code></td>
+</tr>
+<tr class="even">
+<td>What are the cumulative treatment weights?</td>
+<td><strong>Wide:</strong> one row per person, with a separate column
+per measurement occasion and variable</td>
+<td><code>inverse_probability_weighting()</code></td>
+</tr>
+<tr class="odd">
+<td>How are trajectory groups related to a final outcome under a working
+MSM?</td>
+<td>Wide for the final-outcome analysis shown here; first fit the
+trajectory model in long format</td>
+<td><code>trajmsm_ipw()</code>, <code>trajmsm_gform()</code>, or
+<code>trajmsm_pltmle()</code></td>
+</tr>
+<tr class="even">
+<td>How does a recent treatment history relate to a time-indexed
+outcome?</td>
+<td>Long input to the history-restricted wrapper</td>
+<td><code>trajhrmsm_ipw()</code>, <code>trajhrmsm_gform()</code>, or
+<code>trajhrmsm_pltmle()</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>IPW models the treatment mechanism and, when requested, the censoring
+mechanism. G-computation models the outcome regressions. Pooled
+longitudinal targeted maximum likelihood estimation (LTMLE) uses models
+for both the outcome and treatment process and a targeting step. These
+are alternative estimators for an analysis, not interchangeable commands
+with identical inputs. The g-formula and pooled LTMLE enumerate binary
+treatment histories: four treatment occasions have 16 histories and
+eight have 256. History-restricted analyses work on windows of length
+<code>ntimes_interval</code> within <code>total_followup</code>.</p>
+<h2 id="2-fit-the-trajectory-model-in-long-format">2. Fit the trajectory
+model in long format</h2>
+<p>The script creates four annual visits per person. Here
+<code>statins</code> is a binary simulated treatment, <code>hyper</code>
+and <code>bmi</code> are simulated binary time-varying covariates, and
+<code>y</code> is a binary end-of-follow-up outcome repeated across a
+person's long rows. It is not four separate outcome observations.</p>
+<pre class="r" tabindex="0" aria-label="R code"><code>years &lt;- 2011:2014
+long &lt;- gendata(n = 800, start_year = years[1], total_followup = length(years),
+                format = &quot;long&quot;, seed = 845)
+trajectory &lt;- build_traj(
+  obsdata = long, formula = cbind(statins, 1 - statins) ~ I(time - 2011),
+  number_traj = 2, identifier = &quot;id&quot;, seed = 945
+)</code></pre>
+<p>Check that the fit recovered the requested number of groups, inspect
+group sizes and posterior assignment probabilities, and review whether
+the trajectories make sense for the study. Class numbers are arbitrary.
+The script joins the assignment to the person-level data <strong>by
+ID</strong>, not by row order, and uses the group with lower observed
+average adherence as the reference for illustration. Choosing a class
+count and reference for a real analysis calls for scientific
+justification. The script prints <code>table(classes$class)</code> and
+<code>BIC(trajectory$traj_model)</code>. Lower BIC can help compare
+candidate models fitted to the same data; also examine separation,
+stability and substantive usefulness rather than choosing the number
+from BIC alone.</p>
+<p>Add <code>--plot</code> to the command above to save
+<code>observed-trajectories.pdf</code> in your current working directory. The plot shows observed
+proportions treated within assigned classes at each visit, not fitted
+trajectories or causal effects.</p>
+<h2 id="3-prepare-the-wide-data-and-diagnose-treatment-weights">3.
+Prepare the wide data and diagnose treatment weights</h2>
+<p>The script reshapes the visit-level variables to names like
+<code>statins2011</code> and <code>hyper2011</code>. The final outcome
+and baseline variables stay one column each. Specify the treatment
+columns chronologically and pass a list of covariate vectors in that
+<strong>same</strong> order. Verify which covariates the analyst
+observes before treatment at each visit. Example:</p>
+<pre class="r" tabindex="0" aria-label="R code"><code>treatment &lt;- paste0(&quot;statins&quot;, years)
+covariates &lt;- lapply(years, function(year) paste0(c(&quot;hyper&quot;, &quot;bmi&quot;), year))
+weights_by_time &lt;- inverse_probability_weighting(
+  numerator = &quot;stabilized&quot;, identifier = &quot;id&quot;, baseline = c(&quot;age&quot;, &quot;sex&quot;),
+  treatment = treatment, covariates = covariates, include_censor = FALSE,
+  obsdata = wide
+)[[1]]
+w &lt;- weights_by_time[, length(years)]</code></pre>
+<p>The first list element is a matrix of cumulative weights with one
+column per occasion and one row per input person. The final column
+weights the full treatment history in this example. Keep those weights
+aligned to the exact rows passed to the outcome model. If you reorder or
+subset the data, explicitly reindex weights by a unique person ID before
+fitting; the wrapper does not realign weights by name.</p>
+<p>Inspect the weight distribution, large weights, and effective sample
+size, overall and by group. The script calculates effective sample size
+as <code>sum(w)^2 / sum(w^2)</code>. It is a weight-concentration
+summary, not a literal number of people or a guarantee of overlap,
+balance, or identification. For a real study, also check treatment
+probabilities and covariate balance at each decision point, address
+missingness and censoring explicitly, and inspect whether important
+histories have treatment support.</p>
+<h2 id="4-fit-and-interpret-the-weighted-model">4. Fit and interpret the
+weighted model</h2>
+<pre class="r" tabindex="0" aria-label="R code"><code>weights_by_id &lt;- setNames(w, wide$id)
+wide$iptw &lt;- unname(weights_by_id[as.character(wide$id)])
+fit &lt;- glm(y ~ trajectory, family = quasibinomial(), data = wide, weights = iptw)
+se &lt;- sqrt(diag(sandwich::vcovCL(fit, cluster = ~ id)))</code></pre>
+<p>Here the outcome model is fitted directly with
+<code>stats::glm()</code>, so the weights and variance calculation are
+visible. The script presents the diagnosed weights first, then a
+separately labeled sensitivity fit using
+<code>pmin(w, quantile(w, .99))</code> to cap the upper tail. This cap
+illustrates a comparison, not a default recommendation. In particular,
+do not assume that the wrapper’s historical <code>treshold</code>
+argument applies the same cap across releases and branches. In versions
+0.1.5 and 0.1.6, <code>trajmsm_ipw()</code> can fail or use the wrong
+weights for binary and Gaussian outcomes depending on how the caller’s
+data are named. Version 0.1.7 fixes that lookup. The direct fit above
+works across these versions and shows the model and variance calculation
+explicitly.</p>
+<p>The script builds a coefficient table with estimates,
+person-ID–clustered standard errors and 95% Wald confidence limits. Here
+the intercept is the modeled log odds in the reference trajectory group,
+and the trajectory coefficient is a log odds ratio against that group.
+Exponentiate the coefficient and confidence limits to report an odds
+ratio and its interval, not the standard error; this is
+<strong>not</strong> a risk ratio. The standard errors reported by this
+fit do not, by themselves, establish that first-stage weight and
+latent-class estimation uncertainty has been fully propagated.</p>
+<p>LCGA is a summary of treatment histories, not a randomization step
+and not itself a treatment intervention. A causal interpretation depends
+on defining the intervention and target parameter, consistency,
+sequential exchangeability, positivity, and appropriate nuisance and
+working-model choices. For the formal projection estimand, see <a
+href="https://doi.org/10.1177/09622802231202384">Diop et al.
+(2023)</a>.</p>
+<aside class="snapshot" aria-label="Example output">
+<p><strong>Example output.</strong> In the tested run with <code>trajmsm</code> 0.1.7 and R 4.6.2, the simulated trajectory-group odds ratio before capping weights was <strong>0.377</strong> (95% Wald CI: <strong>0.189 to 0.751</strong>).</p>
+</aside>
+<h3 id="optional-use-the-package-wrapper-017-or-newer">Optional: use the
+package wrapper (0.1.7 or newer)</h3>
+<p>With the same outcome formula and ID-aligned weights from above, the
+wrapper should reproduce the direct fit’s estimates and clustered
+standard errors:</p>
+<pre class="r" tabindex="0" aria-label="R code"><code>if (packageVersion(&quot;trajmsm&quot;) &gt;= &quot;0.1.7&quot;) {
+  wrapped &lt;- trajmsm_ipw(
+    formula1 = y ~ trajectory, family = &quot;quasibinomial&quot;, identifier = &quot;id&quot;,
+    obsdata = wide, weights = wide$iptw
+  )
+  direct_se &lt;- sqrt(diag(sandwich::vcovCL(fit, cluster = ~ id)))
+  stopifnot(isTRUE(all.equal(wrapped[, &quot;Estimate&quot;], coef(fit))),
+            isTRUE(all.equal(wrapped[, &quot;Std.Error&quot;], direct_se)))
+}</code></pre>
+<p>Both fits deliberately use the quasibinomial family with its default
+logit link. In base R, binomial GLMs can warn about non-integer
+successes when supplied fractional inverse-probability weights: these
+weights are not counts of binomial trials. The quasibinomial fit keeps
+the same logit mean model without that count warning. Inference here
+uses the explicit person-clustered sandwich covariance.</p>
+<h2 id="if-you-get-stuck">If you get stuck</h2>
+<ul>
+<li><strong>Missing columns or a surprising join:</strong> verify that
+long data have unique person–time keys, wide rows have unique person
+IDs, and every final outcome row matches one trajectory assignment.</li>
+<li><strong>Fewer classes than requested:</strong> inspect model fit and
+group sizes; do not set the requested number mechanically or reinterpret
+arbitrary class labels as fixed treatment strategies.</li>
+<li><strong>Non-finite or extreme weights:</strong> inspect fitted
+treatment probabilities, missing values and support. A numerical cap
+cannot restore identification where support is absent.</li>
+<li><strong>Moving to a survival or history-restricted
+analysis:</strong> consult the function-specific help before changing
+the example. The formulas, censoring, clustering, and outcome scale
+differ; in the survival branch of <code>trajmsm_ipw()</code>, the Cox
+formula is supplied as <code>formula2</code>.</li>
+</ul>
+
+</article>
+<p class="back"><a href="#top">Back to top ↑</a></p>
+</main>
+</div>
+</body>
+</html>
