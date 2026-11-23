@@ -14,13 +14,13 @@ At every visit the person can be treated or untreated. Multiplying the two choic
 
 A **marginal structural model (MSM)** describes how the population-average outcome would differ under specified treatment histories. For example, a health measure can affect whether someone is treated next and their eventual outcome, while itself being affected by earlier treatment. Ignoring it can leave confounding, but ordinary outcome regression that conditions on it can block part of an earlier treatment's effect. The worked example uses inverse probability weighting (IPW) for the treatment decisions over time.
 
-In the [original LCGA-MSM methods paper (Diop et al., 2023)](https://doi.org/10.1177/09622802231202384), LCGA is fitted to observed histories, then the fitted classification rule maps each hypothetical treatment history to a group. The formal target is a **projection**: it summarizes the history-specific mean outcomes under those hypothetical histories using a simpler, group-based working MSM. The treatment histories, not the latent group labels, are the interventions. Two histories in one group can still have different effects; a group contrast summarizes the histories under the chosen working model and does not estimate the effect of assigning someone to a class.
+In the [original LCGA-MSM methods paper (Diop et al., 2023)](https://doi.org/10.1177/09622802231202384), LCGA is fitted to observed histories, then the fitted classification rule maps each hypothetical treatment history to a group. For a specified history ā, m*(ā) = E[Y<sup>ā</sup>] is the population mean outcome if everyone followed that history. The formal target is a **projection**: it summarizes the history-specific mean outcomes under those hypothetical histories using a simpler, group-based working MSM. The treatment histories, not the latent group labels, are the interventions. Two histories in one group can still have different effects; a group contrast summarizes the histories under the chosen working model and does not estimate the effect of assigning someone to a class.
 
 **How is a history assigned to a group?**
 
-![For history a-bar, choose the class j whose posterior probability under the LCGA model is largest.](equations/assignment-rule.svg)
+![Posterior probability of class j given a treatment history: class j's mixture share times that class's probability of the history, divided by the sum of these products across all classes.](equations/class-posterior.svg)
 
-The fitted LCGA computes a posterior probability for each of its J classes (C). For a history ā, g chooses the class with the largest fitted probability. This applies to observed histories and to hypothetical ones; it is a classification rule, not a treatment assignment rule.
+Choose the class with the largest posterior probability. Here zᵢ is person i’s latent class, Āᵢₖ is their full treatment history over K visits, and πⱼ is the fitted share of class j before looking at that history. The history likelihood is the probability of that same sequence under class j. Bayes’ rule multiplies the share by the history likelihood and divides by the sum of these products across all J classes. This classifies a history; it does not assign treatment.
 
 ## A worked example: from treatment histories to a weighted estimate
 
@@ -105,9 +105,9 @@ Here the outcome model is fitted directly with `stats::glm()`, so the weights an
 
 **From log odds to an odds ratio**
 
-![The log odds equal beta zero plus beta one times the indicator for group 2. The odds ratio is exp(beta one); exp(minus 0.975) is approximately 0.377.](equations/odds.svg)
+![The working event probability is expit of beta zero plus beta one times the group-2 indicator. The odds ratio is exp(beta one), approximately exp(minus 0.975), or 0.377.](equations/working-msm.svg)
 
-Here μ(ā) is the working-model event probability for history ā. The indicator equals one for group 2 and zero for the reference group 1. The weighted logistic mean model (the logit link in the quasibinomial fit above) estimates β₁ as about −0.975 in the simulated example. Exponentiating yields the modeled odds in group 2 divided by those in group 1, not a ratio of event probabilities.
+For history ā, z₂*(ā) is 1 for group 2 and 0 for the reference group 1. Expit converts log odds to a probability. The working model approximates m*(ā), not the raw observed event rate within each assigned group. The weighted quasibinomial fit above estimates β₁ at about −0.975 in the simulated example. Exponentiating β₁ gives the modeled odds in group 2 divided by those in group 1, not the ratio of event probabilities.
 
 The script builds a coefficient table with estimates, person-ID–clustered standard errors and 95% Wald confidence limits. Here the intercept is the modeled log odds in the reference trajectory group, and the trajectory coefficient is a log odds ratio against that group. Exponentiate the coefficient and confidence limits to report an odds ratio and its interval, not the standard error; this is **not** a risk ratio. The standard errors reported by this fit do not, by themselves, establish that first-stage weight and latent-class estimation uncertainty has been fully propagated.
 

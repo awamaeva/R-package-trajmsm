@@ -56,7 +56,7 @@ weighting (IPW) for the treatment decisions over time.</p>
 <p>In the method of <a
 href="https://doi.org/10.1177/09622802231202384">Diop et al. (2023), original LCGA-MSM methods paper</a>,
 LCGA is fitted to observed histories, then the fitted classification
-rule maps each hypothetical treatment history to a group. The formal
+rule maps each hypothetical treatment history to a group. For a specified history ā, m*(ā) = E[Y<sup>ā</sup>] is the population mean outcome if everyone followed that history. The formal
 target is a <strong>projection</strong>: it summarizes the
 history-specific mean outcomes under those hypothetical histories using
 a simpler, group-based working MSM. The treatment histories, not the
@@ -66,8 +66,8 @@ histories under the chosen working model and does not estimate the
 effect of assigning someone to a class.</p>
 <div class="equation-note">
 <p><strong>How is a history assigned to a group?</strong></p>
-<div class="equation-display"><img src="equations/assignment-rule.svg" alt="For history a-bar, choose the class j whose posterior probability under the LCGA model is largest."></div>
-<p>The fitted LCGA computes a posterior probability for each of its J classes (C). For a history ā, g chooses the class with the largest fitted probability. This applies to observed histories and to hypothetical ones; it is a classification rule, not a treatment assignment rule.</p>
+<div class="equation-display"><img src="equations/class-posterior.svg" alt="Posterior probability of class j given a treatment history: class j&#x27;s mixture share times that class&#x27;s probability of the history, divided by the sum of these products across all classes."></div>
+<p>Choose the class with the largest posterior probability. Here zᵢ is person i’s latent class, Āᵢₖ is their full treatment history over K visits, and πⱼ is the fitted share of class j before looking at that history. The history likelihood is the probability of that same sequence under class j. Bayes’ rule multiplies the share by the history likelihood and divides by the sum of these products across all J classes. This classifies a history; it does not assign treatment.</p>
 </div>
 <h2 id="a-worked-example-from-treatment-histories-to-a-weighted-estimate">A
 worked example: from treatment histories to a weighted estimate</h2>
@@ -215,8 +215,8 @@ separately labeled sensitivity fit using
 illustrates a comparison, not a default recommendation.</p>
 <div class="equation-note">
 <p><strong>From log odds to an odds ratio</strong></p>
-<div class="equation-display"><img src="equations/odds.svg" alt="The log odds equal beta zero plus beta one times the indicator for group 2. The odds ratio is exp(beta one); exp(minus 0.975) is approximately 0.377."></div>
-<p>Here μ(ā) is the working-model event probability for history ā. The indicator equals one for group 2 and zero for the reference group 1. The weighted logistic mean model (the logit link in the quasibinomial fit above) estimates β₁ as about −0.975 in the simulated example. Exponentiating yields the modeled odds in group 2 divided by those in group 1, not a ratio of event probabilities.</p>
+<div class="equation-display"><img src="equations/working-msm.svg" alt="The working event probability is expit of beta zero plus beta one times the group-2 indicator. The odds ratio is exp(beta one), approximately exp(minus 0.975), or 0.377."></div>
+<p>For history ā, z₂*(ā) is 1 for group 2 and 0 for the reference group 1. Expit converts log odds to a probability. The working model approximates m*(ā), not the raw observed event rate within each assigned group. The weighted quasibinomial fit above estimates β₁ at about −0.975 in the simulated example. Exponentiating β₁ gives the modeled odds in group 2 divided by those in group 1, not the ratio of event probabilities.</p>
 </div>
 <p>The script builds a coefficient table with estimates,
 person-ID–clustered standard errors and 95% Wald confidence limits. Here
