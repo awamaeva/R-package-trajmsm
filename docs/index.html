@@ -183,7 +183,7 @@ weights_by_time &lt;- inverse_probability_weighting(
 w &lt;- weights_by_time[, length(years)]</code></pre>
 <div class="equation-note">
 <p><strong>What goes into the stabilized treatment weight?</strong></p>
-<div class="equation-display"><img src="equations/weights.svg" alt="Stabilized weight for person i: multiply the four ratios of the fitted probability of observed treatment given prior treatment, to that given prior treatment, baseline covariates and measured covariate history through the current visit."></div>
+<div class="equation-display"><img src="equations/weights-rule.svg" alt="Stabilized weight for person i: multiply the four ratios of the fitted probability of observed treatment given prior treatment, to that given prior treatment, baseline covariates and measured covariate history through the current visit."></div>
 <p>At each visit t for person i, use the fitted probability of the treatment actually received (aᵢₜ). The numerator conditions on earlier treatment only (at visit 1 it is unconditional). The denominator also includes baseline covariates Vᵢ (age and sex here) and measured time-varying covariates L through the current visit, taken before its treatment decision. Multiply the four ratios to get the final weight; this example does not add censoring weights. See the weight code just above.</p>
 <p>Illustration (not simulation output): If the person was untreated at a visit and the numerator and denominator models give probabilities of treatment of 0.40 and 0.70, use the probabilities of no treatment: (1 − 0.40) / (1 − 0.70) = 2. That visit doubles the cumulative weight so far.</p>
 </div>

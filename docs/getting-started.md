@@ -82,7 +82,7 @@ w <- weights_by_time[, length(years)]
 
 **What goes into the stabilized treatment weight?**
 
-![Stabilized weight for person i: multiply the four ratios of the fitted probability of observed treatment given prior treatment, to that given prior treatment, baseline covariates and measured covariate history through the current visit.](equations/weights.svg)
+![Stabilized weight for person i: multiply the four ratios of the fitted probability of observed treatment given prior treatment, to that given prior treatment, baseline covariates and measured covariate history through the current visit.](equations/weights-rule.svg)
 
 At each visit t for person i, use the fitted probability of the treatment actually received (aᵢₜ). The numerator conditions on earlier treatment only (at visit 1 it is unconditional). The denominator also includes baseline covariates Vᵢ (age and sex here) and measured time-varying covariates L through the current visit, taken before its treatment decision. Multiply the four ratios to get the final weight; this example does not add censoring weights. See the weight code just above.
 
